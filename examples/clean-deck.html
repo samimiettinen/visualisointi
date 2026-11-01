@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Aurora · Teaser</title>
+<!--
+  unslop-slides deck engine. One file, no build step, no dependencies.
+  The slide is a fixed 1920 × 1080 canvas scaled to the window, so what you see
+  on a laptop, on a projector, in the PDF and in the rendered PNGs is the same layout.
+  1 pt in PowerPoint terms = 2 px on this canvas. Keys: → ← space, Home, End, F full screen, P print.
+  Replace the tokens in :root with the direction; keep the structure.
+-->
+<!-- Fonts: pick from references/tokens.md for the character in the direction. Example: -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Brief
+     Audience and decision: strategic buyers and Nordic PE deciding whether to ask for the IM
+     Argument: Aurora is a fast-growing, EBITDA-positive field-service software company looking for a strategic partner
+     Mode: read (teaser)
+     Character: practical, exact, northern
+     World: field service: technicians, vans, work orders, winter roads; hi-vis orange
+     Moments: the ARR chart; the quality-of-growth figures
+     Signature: a small hi-vis tag above the one figure that matters; in charts the accent alone marks it */
+  :root {
+    /* Neutral ramp: graphite light, slightly cool for the northern world */
+    --page: #f6f6f4;           /* outside the slide */
+    --bg: #ffffff;             /* slide */
+    --raised: #f3f3f2;         /* table stripe, quiet panel */
+    --line: rgba(23, 23, 23, .10);
+    --ink: #16191c;            /* primary text */
+    --ink-2: #4f4f4f;          /* secondary */
+    --ink-3: #737373;          /* muted: meta, sources, axis labels */
+    /* One accent, used on a few percent of the slide */
+    --accent: #c2410c;          /* hi-vis orange, 5.2:1 on white */
+    --accent-ink: #ffffff;
+    /* Chart neutrals: the series that are not the point */
+    --series-1: #2b2b2b;
+    --series-2: #8c8c8c;
+    --series-3: #cfd4d9;
+    --positive: #2f7d4f;
+    --negative: #b42318;
+
+    --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+    --font-display: var(--font-ui);  /* a partner face for titles, if the direction asks for one */
+
+    /* Canvas grid: 1920 × 1080, 96 margins, 12 columns of 122 with 24 gutters, 8 px rhythm */
+    --margin-x: 96px;
+    --margin-top: 88px;
+    --margin-bottom: 72px;
+    --gutter: 24px;
+
+    /* Type scale on the canvas (px = 2 × pt) */
+    --t-display: 112px;  /* cover and statement slides only */
+    --t-title: 52px;     /* action titles, two lines at most */
+    --t-lead: 36px;      /* the one sentence under a title */
+    --t-body: 30px;      /* 15 pt: read decks. Use 36 to 40 for projected talks */
+    --t-small: 24px;     /* 12 pt: table cells, labels */
+    --t-meta: 20px;      /* 10 pt: sources, footers, page numbers */
+    --t-figure: 96px;    /* key figures */
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--page); }
+  body { font-family: var(--font-ui); color: var(--ink); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums lining-nums; overflow: hidden; }
+
+  /* ---------- canvas ---------- */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; background: var(--bg); overflow: hidden;
+    padding: var(--margin-top) var(--margin-x) var(--margin-bottom); display: grid;
+    grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); grid-template-rows: auto 1fr auto; align-content: start;
+    visibility: hidden; }
+  .slide.is-active { visibility: visible; }
+  .slide > * { grid-column: 1 / -1; }
+
+  /* ---------- title zone: same place on every content slide ---------- */
+  .slide > header { grid-row: 1; padding-bottom: 48px; max-width: 1480px; }
+  .kicker { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); }   /* cover and section slides only, never over a content title */
+  h1, h2 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: var(--t-title); line-height: 64px; }
+  .lead { font-size: var(--t-lead); line-height: 48px; color: var(--ink-2); margin-top: 24px; max-width: 1280px; text-wrap: pretty; } /* cover and statement slides only */
+
+  /* ---------- body zone ---------- */
+  .body { grid-row: 2; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-content: start; min-height: 0; }
+  p, li { font-size: var(--t-body); line-height: 44px; text-wrap: pretty; }
+  p + p { margin-top: 16px; }
+  ul.points { list-style: none; display: grid; gap: 24px; }
+  ul.points li { padding-left: 32px; position: relative; }
+  ul.points.is-large { gap: 40px; }
+  ul.points.is-large li { font-size: var(--t-lead); line-height: 52px; }
+  ul.points li::before { content: ""; position: absolute; left: 0; top: calc(0.5lh - 1px); width: 12px; height: 2px; background: var(--ink-3); }
+  strong { font-weight: 600; }
+  .muted { color: var(--ink-3); }
+  .col-1-5 { grid-column: 1 / 6; } .col-1-6 { grid-column: 1 / 7; } .col-1-7 { grid-column: 1 / 8; } .col-1-8 { grid-column: 1 / 9; }
+  .col-6-13 { grid-column: 6 / 13; } .col-7-13 { grid-column: 7 / 13; } .col-8-13 { grid-column: 8 / 13; } .col-9-13 { grid-column: 9 / 13; }
+
+  /* ---------- footer zone: source left, page number right ---------- */
+  .slide > footer { grid-row: 3; display: flex; justify-content: space-between; align-items: end; gap: 48px; padding-top: 32px;
+    font-size: var(--t-meta); line-height: 28px; color: var(--ink-3); }
+  .slide > footer .source { max-width: 1400px; }
+  .slide > footer .meta { white-space: nowrap; }
+
+  /* ---------- slide types ---------- */
+  .s-cover { grid-template-rows: 1fr auto; padding-bottom: 120px; }
+  .s-cover > div { grid-row: 2; }
+  .s-cover h1 { font-size: var(--t-display); line-height: 1.04; letter-spacing: -0.03em; max-width: 1560px; text-wrap: balance; }
+  .s-cover .lead { margin-top: 32px; }
+  .s-cover .meta { margin-top: 64px; font-size: var(--t-small); color: var(--ink-3); }
+
+  .s-statement { grid-template-rows: 1fr auto; }
+  .s-statement > div { grid-row: 1; align-self: center; }
+  .s-statement > footer { grid-row: 2; }
+  .s-statement h2 { font-size: 80px; line-height: 92px; letter-spacing: -0.02em; max-width: 1500px; }
+
+  .s-section { align-content: end; padding-bottom: 160px; background: var(--ink); color: var(--bg); }
+  .s-section .kicker { color: color-mix(in srgb, var(--bg) 60%, transparent); }
+  .s-section h2 { font-size: 80px; line-height: 92px; }
+
+  .s-figures .body { align-content: center; }
+  .figures { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); column-gap: var(--gutter); border-top: 1px solid var(--line); }
+  .figure { padding-top: 32px; padding-right: 32px; }
+  .figure .value { font-size: var(--t-figure); line-height: 1; font-weight: 500; letter-spacing: -0.02em; }
+  .figure .value.is-key { color: var(--accent); }
+  .figure .label { font-size: var(--t-small); line-height: 32px; color: var(--ink-2); margin-top: 16px; }
+  .figure .delta { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); }
+
+  table.data { width: 100%; border-collapse: collapse; font-size: var(--t-small); line-height: 32px; }
+  table.data th { text-align: left; font-weight: 500; color: var(--ink-3); padding: 0 16px 12px 0; border-bottom: 1px solid var(--line); }
+  table.data td { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); }
+  table.data .num { text-align: right; }
+  table.data tr.is-key td { color: var(--ink); font-weight: 600; }
+  table.data td:not(:first-child) { color: var(--ink-2); }
+
+  .note { font-size: var(--t-lead); line-height: 48px; color: var(--ink-2); }   /* commentary beside evidence: no box, no stripe */
+  .note + .note { margin-top: 24px; }
+  /* signature: a hi-vis tag above the figure that matters; the numeral itself stays ink, so it is marked once */
+  .figure::before { content: ""; display: block; width: 16px; height: 16px; margin-bottom: 24px; }
+  .figure.is-key::before { background: var(--accent); }
+  .figure .note { margin-top: 24px; max-width: 640px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 48px; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); font-size: var(--t-small); line-height: 32px; color: var(--ink-2); }
+  .caption { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); margin-top: 16px; }   /* measure, unit, period under a chart */
+
+  /* charts drawn by deck.chart.bars(); text inherits the deck type */
+  svg.chart text { font-family: var(--font-ui); font-size: 24px; fill: var(--ink-3); }
+  svg.chart .value { font-family: var(--font-ui); font-size: 28px; fill: var(--ink-2); }
+  svg.chart .value.is-key { fill: var(--accent); font-weight: 600; }
+
+  /* ---------- builds: off by default, opt in per element with data-build ---------- */
+  [data-build] { transition: opacity 240ms cubic-bezier(.22,1,.36,1), transform 240ms cubic-bezier(.22,1,.36,1); }
+  .slide [data-build]:not(.is-built) { opacity: 0; transform: translateY(8px); }
+  @media (prefers-reduced-motion: reduce) { [data-build] { transition: none; } }
+
+  /* ---------- print: every slide on its own 1920 × 1080 page ---------- */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { background: none; overflow: visible; height: auto; }
+    #stage { position: static; transform: none !important; width: 1920px; height: auto; }
+    .slide { position: relative; visibility: visible; break-after: page; }
+    .slide [data-build] { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<main id="stage">
+
+  <section class="slide s-cover">
+    <div>
+      <h1>Nordic field-service scheduling software with €12.4m ARR and positive EBITDA</h1>
+      <p class="lead">The owners are looking for a strategic partner to take Aurora beyond the Nordics</p>
+      <p class="facts"><span>Subscription software for scheduling field technicians</span><span>Founded 2014</span><span>Oulu, Finland</span><span>85 people</span></p>
+      <p class="meta">Project Aurora · Strictly confidential · October 2026</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <header>
+      <h2>ARR has quadrupled since 2021 and grew by at least a third in every year</h2>
+    </header>
+    <div class="body">
+      <div class="col-1-8">
+        <svg class="chart" data-chart='{"type":"bars","labels":["2021","2022","2023","2024","2025"],"values":[3.1,4.6,6.4,8.5,12.4],"key":4,"decimals":1,"prefix":"€","suffix":"m","height":600}' role="img" aria-label="ARR by year: 2021 €3.1m, 2022 €4.6m, 2023 €6.4m, 2024 €8.5m, 2025 €12.4m"></svg>
+        <p class="caption">ARR at 31 December, € million</p>
+      </div>
+      <div class="col-9-13">
+        <p class="note">Year-on-year growth was 48&nbsp;%, 39&nbsp;%, 33&nbsp;% and 46&nbsp;% from 2022 to 2025.</p>
+      </div>
+    </div>
+    <footer><span class="source">Source: company information</span><span class="meta">Project Aurora · Growth · <span class="page"></span></span></footer>
+  </section>
+
+  <section class="slide s-figures">
+    <header>
+      <h2>Aurora grew while staying EBITDA-positive, and existing customers kept spending more</h2>
+    </header>
+    <div class="body">
+      <div class="figures" style="--n: 2; grid-column: 1 / 11; --t-figure: 128px">
+        <div class="figure is-key"><div class="value">€1.85m</div><div class="label">EBITDA, 2025</div><p class="note">Positive EBITDA in the year ARR grew 46&nbsp;%.</p></div>
+        <div class="figure"><div class="value">118.5&nbsp;%</div><div class="label">Net revenue retention, 2025</div><p class="note">Existing customers spent 18.5&nbsp;% more than a year earlier, after churn.</p></div>
+      </div>
+    </div>
+    <footer><span class="source">Source: company information</span><span class="meta">Project Aurora · Quality of growth · <span class="page"></span></span></footer>
+  </section>
+
+  <section class="slide s-statement">
+    <div>
+      <h2>Next step: request the information memorandum from the sell-side adviser</h2>
+      <p class="lead">Aurora's owners are looking for a strategic partner to fund expansion beyond the Nordics</p>
+    </div>
+    <footer><span class="source">This teaser is confidential and does not constitute an offer</span><span class="meta">Project Aurora · Next step · <span class="page"></span></span></footer>
+  </section>
+
+</main>
+<script>
+/* ---------- deck controller: navigation, scaling, builds, and a tiny chart helper ---------- */
+(() => {
+  const stage = document.getElementById("stage");
+  const slides = [...stage.querySelectorAll(".slide")];
+  let index = 0, step = 0;
+  const builds = (s) => [...s.querySelectorAll("[data-build]")].sort((a, b) => (+a.dataset.build || 0) - (+b.dataset.build || 0));
+
+  function fit() {
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `scale(${k}) translate(-50%, -50%)`;
+  }
+  function show(i, opts = {}) {
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, n) => s.classList.toggle("is-active", n === index));
+    const b = builds(slides[index]);
+    step = opts.instant || opts.end ? b.length : 0;
+    b.forEach((el, n) => el.classList.toggle("is-built", n < step));
+    if (!opts.instant) history.replaceState(null, "", `#${index + 1}`);
+  }
+  function next() { const b = builds(slides[index]); if (step < b.length) { b[step++].classList.add("is-built"); } else show(index + 1); }
+  function prev() { if (step > 0) { builds(slides[index])[--step].classList.remove("is-built"); } else show(index - 1, { end: true }); }
+
+  // page numbers and the ghost deck title for each slide
+  slides.forEach((s, n) => { const p = s.querySelector("footer .page"); if (p) p.textContent = n + 1; });
+
+  addEventListener("keydown", (e) => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+    if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+    if (e.key === "Home") show(0);
+    if (e.key === "End") show(slides.length - 1);
+    if (e.key === "f" || e.key === "F") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    if (e.key === "p" || e.key === "P") print();
+  });
+  let x0 = null;
+  addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) dx < 0 ? next() : prev(); x0 = null; });
+  addEventListener("resize", fit);
+
+  /* Bars with direct labels: one neutral series, the accent on the bar that matters (key),
+     no gridlines, no legend, no axis box. Values print above the bars in the deck's format.
+     data-chart: {"type":"bars","labels":[…],"values":[…],"key":index,"decimals":1,"prefix":"€","suffix":"m","height":560} */
+  const fmt = (v, d, locale) => v.toLocaleString(locale, { minimumFractionDigits: d, maximumFractionDigits: d });
+  function bars(svg, cfg) {
+    // Drawn at the column's own width so chart text keeps the deck's sizes (24 px = 12 pt)
+    const W = cfg.width ?? (svg.parentElement.clientWidth || 1144), H = cfg.height ?? 560, padB = 56, padT = 56;
+    const locale = document.documentElement.lang === "fi" ? "fi-FI" : "en-GB";
+    const n = cfg.values.length, gap = cfg.gap ?? 0.36;
+    const max = Math.max(...cfg.values), step = W / n, w = step * (1 - gap);
+    const css = getComputedStyle(document.documentElement);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", "100%");
+    let out = `<line x1="0" x2="${W}" y1="${H - padB}" y2="${H - padB}" stroke="${css.getPropertyValue("--line")}" stroke-width="2"/>`;
+    cfg.values.forEach((v, i) => {
+      const h = (H - padB - padT) * v / max, x = i * step + (step - w) / 2, y = H - padB - h, key = i === cfg.key;
+      out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${key ? css.getPropertyValue("--accent") : css.getPropertyValue("--series-3")}"/>`;
+      // same format on every label; units belong in the caption, or in prefix/suffix applied to all
+      out += `<text class="value${key ? " is-key" : ""}" x="${x + w / 2}" y="${y - 16}" text-anchor="middle">${cfg.prefix ?? ""}${fmt(v, cfg.decimals ?? 0, locale)}${cfg.suffix ?? ""}</text>`;
+      out += `<text x="${x + w / 2}" y="${H - padB + 36}" text-anchor="middle">${cfg.labels[i]}</text>`;
+    });
+    svg.innerHTML = out;
+  }
+  document.querySelectorAll("svg.chart[data-chart]").forEach((svg) => { const cfg = JSON.parse(svg.dataset.chart); if (cfg.type === "bars") bars(svg, cfg); });
+
+  window.deck = { go: (i, o) => show(i, o), next, prev, get index() { return index; }, slides, chart: { bars } };
+  fit();
+  const start = parseInt(location.hash.slice(1), 10);
+  show(Number.isFinite(start) ? start - 1 : 0, { instant: true });
+})();
+</script>
+</body>
+</html>

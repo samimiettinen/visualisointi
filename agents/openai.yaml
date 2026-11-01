@@ -1,0 +1,5 @@
+interface:
+  display_name: "Clear Slides"
+  short_description: "Design rich, evidence-based visual presentations and financial decks without generic AI aesthetics"
+  default_prompt: "Use $clear-slides to design, improve, or review this presentation with purposeful visual forms, honest data visualization, and rigorous editorial hierarchy."
+instructions_file: "../OPENAI.md"
