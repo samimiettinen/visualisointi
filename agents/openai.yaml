@@ -1,5 +1,5 @@
 interface:
-  display_name: "Clear Slides"
-  short_description: "Design rich, evidence-based visual presentations and financial decks without generic AI aesthetics"
-  default_prompt: "Use $clear-slides to design, improve, or review this presentation with purposeful visual forms, honest data visualization, and rigorous editorial hierarchy."
+  display_name: "Visualisointi"
+  short_description: "Suunnittele näyttöön pohjautuvia visuaalisia esityksiä ja talousdioja ilman AI-slopia"
+  default_prompt: "Käytä $visualisointi -skilliä tämän esityksen suunnitteluun, parantamiseen tai arviointiin tarkoituksenmukaisten visuaalisten muotojen ja tarkan toimituksellisen hierarkian avulla."
 instructions_file: "../OPENAI.md"

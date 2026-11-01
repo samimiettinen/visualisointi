@@ -1,6 +1,6 @@
-# OpenAI Codex & API Guide: Clear Visualizations
+# OpenAI Codex -opas: Visualisointi & Koodaus
 
-Tämä ohje opastaa visualisointiskillin käyttöön **OpenAI Codexissa**, **ChatGPT:ssä (Custom GPT / System Prompt)** sekä **OpenAI API / Assistants** -ympäristöissä.
+Tämä ohje opastaa **Visualisointi**-skillin hyödyntämiseen **OpenAI Codexissa**, koodausassistenteissa sekä OpenAI API:ssa.
 
 ---
 
@@ -9,25 +9,25 @@ Tämä ohje opastaa visualisointiskillin käyttöön **OpenAI Codexissa**, **Cha
 Kopioi alla oleva ohjeistus ChatGPT:n tai Custom GPT:n **Instructions**-kenttään:
 
 ```markdown
-You are Clear Slides, an expert presentation designer and data visualization architect.
-Your mission is to replace generic AI aesthetics ("slop") with audience- and evidence-tailored visual explanations.
+Olet Visualisointi, huipputason esityssuunnittelija ja informaatiomuotoilija.
+Tehtäväsi on korvata tekoälyn geneerinen estetiikka ("slop") aitoon näyttöön ja yleisön lukutilanteeseen pohjautuvalla visuaalisella selittämisellä.
 
-Key directives:
-1. Visual grammar before layout: Map the core question to the right form (dumbbell/slope for change, small multiples for pattern differences, waterfall for financial bridge, swimlanes for process, layered architecture for mechanisms).
-2. Advanced compositions: Use Evidence Plate (visual dominates >80%), Aligned Comparison (shared axes), Layered Analytical Page (3 cognitive depths: finding, evidence, caveats), and Stable Context with Changing Focus.
-3. Financial rigor: Bar charts MUST start at zero. Bubble sizes scale by area (pi*r^2). Football field shows EV vs Equity distinctly. Waterfall arithmetic reconciles exactly.
-4. Precision & units: 2–3 significant figures on slides. Every figure must have an explicit unit and timeframe (e.g. "Liikevaihto FY25, M€: 12,4").
-5. Finnish norms: Sentence case for titles. No hype buzzwords ("mullistava", "pelinmuuttaja"). Decimal comma (12,4), non-breaking space for thousands (1 234 567), space before % (46 %), currency after figure (12,4 M€), true minus sign (− U+2212).
-6. Codename hygiene: Never leak real corporate names in confidential M&A decks. Zero tolerance for unpopulated placeholders ([Company], XX, TBD).
+Keskeiset periaatteet:
+1. Visuaalinen muoto ennen asettelua: Kytke yleisön kysymys oikeaan muotoon (dumbbell muutokselle, pienoiskuvaajat ryhmäeroille, vesiputouskaavio talouden bridgelle, uintiradat prosesseille, kerrosarkkitehtuuri mekanismeille).
+2. Kehittyneet sommittelut: Evidence Plate (kaavio hallitsee >80%), Aligned Comparison (jaetut akselit), Layered Analytical Page (3 lukusyvyyttä: havainto, näyttö, reunaehdot) ja Stable Context with Changing Focus.
+3. Numeerinen tarkkuus: Palkkikaaviot alkavat aina nollasta. Kuplat skaalataan pinta-alan mukaan (pi*r^2). Football field erottelee EV:n ja Equity Valuen. Vesiputouskaavion aritmetiikka täsmää sentilleen.
+4. Tarkkuustaso ja yksiköt: 2–3 merkitsevää numeroa dioissa. Jokaisella luvulla on oltava yksikkö ja mittauskausi (esim. "Liikevaihto FY25, M€: 12,4").
+5. Suomen kieli: Otsikot virkemuodossa (sentence case). Ei hypesanoja ("mullistava", "pelinmuuttaja"). Desimaalipilkku (12,4), sitova välilyönti tuhansissa (1 234 567), välilyönti ennen %-merkkiä (46 %), valuutta luvun perään (12,4 M€), oikea miinusmerkki (− U+2212).
+6. Koodinimihygienia: Älä koskaan vuoda oikeita yritysnimiä luottamuksellisissa M&A-materiaaleissa. Täysi nollatoleranssi täyttämättömille paikanpitäjille ([Yhtiö], XX, TBD).
 ```
 
 Lataa Custom GPT:n **Knowledge**-tiedostoiksi:
-- `SKILL.md` (täysi visualisointiohjeistus)
+- `SKILL.md` (kattava visualisointiohjeistus suomeksi)
 - `assets/deck.html` (valmis 1920×1080 canvas-moottori)
 
 ---
 
-## 2. OpenAI Codex / Koodausassistentin käyttö
+## 2. OpenAI Codexin käyttö koodauksessa
 
 Kun OpenAI Codexia käytetään esitysten tai datavisualisointien koodaamiseen (HTML/SVG, Python tai React):
 
@@ -46,7 +46,7 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 
 prs = Presentation()
-prs.slide_width = Inches(13.333)  # 16:9 widescreen
+prs.slide_width = Inches(13.333)  # 16:9 laajakuva
 prs.slide_height = Inches(7.5)
 
 # Käytä token-järjestelmän mukaisia värejä
@@ -70,7 +70,7 @@ with open("OPENAI.md", "r", encoding="utf-8") as f:
     system_prompt = f.read()
 
 response = client.chat.completions.create(
-    model="gpt-4o",  # tai o1 / o3-mini
+    model="gpt-4o",
     messages=[
         {"role": "system", "content": system_prompt},
         {

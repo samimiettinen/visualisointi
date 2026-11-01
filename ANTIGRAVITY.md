@@ -1,14 +1,14 @@
-# Google Antigravity & Gemini Guide: Clear Visualizations
+# Google Antigravity & Gemini -opas: Visualisointi
 
-Tämä ohje opastaa visualisointiskillin (`clear-slides`) käyttöönottoon ja hyödyntämiseen **Google Antigravityssä** ja **Gemini CLI / IDE** -ympäristöissä.
+Tämä ohje opastaa **Visualisointi**-skillin (`visualisointi`) käyttöönottoon ja hyödyntämiseen **Google Antigravityssä** ja **Gemini CLI / IDE** -ympäristöissä.
 
 ---
 
 ## 1. Miten Antigravity-skilli toimii?
 
 Antigravity käyttää modulaarista taitojärjestelmää (*Skills*), joka hyödyntää **progressiivista paljastamista (Progressive Disclosure)**:
-1. Käynnistyessään Antigravity lukee vain skillin nimen ja kuvauksen (`name: clear-slides`, `description: ...`) `SKILL.md`-tiedoston YAML-frontmatterista.
-2. Kun käyttäjä pyytää esityksen suunnittelua, uudistamista tai auditointia, agentti aktivoi skillin ja lataa täyden ohjeistuksen kontekstiin.
+1. Käynnistyessään Antigravity lukee vain skillin nimen ja kuvauksen (`name: visualisointi`, `description: ...`) `SKILL.md`-tiedoston YAML-frontmatterista.
+2. Kun käyttäjä pyytää esityksen suunnittelua, uudistamista tai auditointia, agentti aktivoi skillin ja lataa täyden suomenkielisen ohjeistuksen kontekstiin.
 3. Agentti osaa itsenäisesti lukea syventävät viitedokumentit (`references/`) ja ajaa tarkistusskriptit (`scripts/`).
 
 ---
@@ -18,9 +18,8 @@ Antigravity käyttää modulaarista taitojärjestelmää (*Skills*), joka hyödy
 ### Vaihtoehto A: Globaali taito (Kaikissa projekteissa käytettävissä)
 Sijoita kansio koneesi globaaliin taitohakemistoon:
 ```bash
-# Esimerkki: Kloonaa tai linkitä taito globaaliin polkuun
 mkdir -p ~/.gemini/config/skills
-git clone https://github.com/samimiettinen/visualisointi.git ~/.gemini/config/skills/Presentations
+git clone https://github.com/samimiettinen/visualisointi.git ~/.gemini/config/skills/visualisointi
 ```
 
 ### Vaihtoehto B: Työtilakohtainen taito (Projektikohtainen)
@@ -35,16 +34,16 @@ Kun avaat työtilan Antigravityssä, skilli on heti käytettävissä.
 
 ## 3. Skillin aktivointi ja esimerkkikomennot
 
-Voit aktivoida skillin nimellä `$clear-slides` tai suoralla luonnollisen kielen pyynnöllä:
+Voit aktivoida skillin nimellä `$visualisointi` tai suoralla luonnollisen kielen pyynnöllä:
 
 - **Uuden esityksen luominen:**
-  > *"Suunnittele $clear-slides -skillillä 5 dian sijoitusmuistio yrityskaupan kohteesta. Käytä koodinimeä Project Aurora, Translinkin brändivärejä ja rakenna taloussivulle EBITDA-bridge."*
+  > *"Suunnittele $visualisointi -skillillä 5 dian sijoitusmuistio yrityskaupan kohteesta. Käytä koodinimeä Projekti Aurora, Translinkin brändivärejä ja rakenna taloussivulle EBITDA-bridge."*
 
 - **Olemassa olevan esityksen parantaminen:**
-  > *"Käy läpi tämä board pack. Korvaa yleiset luettelomerkit visual grammar -matriisin mukaisilla kaavioilla ja säilytä kaikki päätöksenteon kannalta oleelliset reunaehdot."*
+  > *"Käy läpi tämä board pack. Korvaa yleiset luettelomerkit visuaalisen kieliopin mukaisilla kaavioilla ja säilytä kaikki päätöksenteon kannalta oleelliset reunaehdot."*
 
 - **Auditointi ja laaduntarkastus ilman muokkausta:**
-  > *"Auditoi deck.html 3-vaiheisella tarkastuksella (Contact sheet, First glance, Micro inspection) ja aja slop_lint.py. Raportoi havainnot."*
+  > *"Auditoi deck.html 3-vaiheisella tarkastuksella (Kontaktikartta, Ensisilmäys, Mikrotarkastus) ja aja slop_lint.py. Raportoi havainnot."*
 
 ---
 
