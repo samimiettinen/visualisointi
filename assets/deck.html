@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deck title</title>
+<!--
+  Deck engine of the visualisointi skill. One file, no build step, no dependencies.
+  The slide is a fixed 1920 × 1080 canvas scaled to the window, so what you see
+  on a laptop, on a projector, in the PDF and in the rendered PNGs is the same layout.
+  1 pt in PowerPoint terms = 2 px on this canvas. Keys: → ← space, Home, End, F full screen, P print.
+  Replace the tokens in :root with the direction; keep the structure.
+-->
+<!-- Offline default. Use verified installed or locally supplied fonts for a specific brand. -->
+<style>
+  :root {
+    /* Neutral ramp: light graphite. Swap for warm, ink or a brand ramp from tokens.md */
+    --page: #f6f6f4;           /* outside the slide */
+    --bg: #ffffff;             /* slide */
+    --raised: #f3f3f2;         /* table stripe, quiet panel */
+    --line: rgba(23, 23, 23, .10);
+    --ink: #171717;            /* primary text */
+    --ink-2: #4f4f4f;          /* secondary */
+    --ink-3: #666666;          /* muted: meta, sources, axis labels (5.2:1 on --raised) */
+    /* Emphasis plus optional category roles; choose by meaning, not a colour quota. */
+    --accent: #ae5029;
+    --accent-ink: #ffffff;
+    --category-a: #006b6b;
+    --category-b: #3559a6;
+    --category-c: #a34b27;
+    /* Chart neutrals: the series that are not the point */
+    --series-1: #2b2b2b;
+    --series-2: #6b6b6b;
+    --series-3: #8a8a8a;      /* context series; 3:1 on --raised, label it directly */
+    --positive: #2f7d4f;
+    --negative: #b42318;
+
+    --font-ui: Arial, system-ui, sans-serif;
+    --font-display: var(--font-ui);  /* a partner face for titles, if the direction asks for one */
+
+    /* Canvas grid: 1920 × 1080, 96 margins, 12 columns of 122 with 24 gutters, 8 px rhythm */
+    --margin-x: 96px;
+    --margin-top: 88px;
+    --margin-bottom: 72px;
+    --gutter: 24px;
+
+    /* Type scale on the canvas (px = 2 × pt) */
+    --t-display: 112px;  /* cover and statement slides only */
+    --t-title: 52px;     /* action titles, two lines at most */
+    --t-lead: 36px;      /* the one sentence under a title */
+    --t-body: 30px;      /* 15 pt: read decks. Projected talks: 44–60 px (22–30 pt), see references/tokens.md */
+    --t-small: 24px;     /* 12 pt: table cells, labels */
+    --t-meta: 20px;      /* 10 pt: sources, footers, page numbers */
+    --t-figure: 96px;    /* key figures */
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--page); }
+  body { font-family: var(--font-ui); color: var(--ink); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums lining-nums; overflow: hidden; }
+
+  /* ---------- canvas ---------- */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; background: var(--bg); overflow: hidden;
+    padding: var(--margin-top) var(--margin-x) var(--margin-bottom); display: grid;
+    grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); grid-template-rows: auto 1fr auto; align-content: start;
+    visibility: hidden; }
+  .slide.is-active { visibility: visible; }
+  .slide > * { grid-column: 1 / -1; }
+
+  /* ---------- title zone: stable within this layout family ---------- */
+  .slide > header { grid-row: 1; padding-bottom: 48px; max-width: 1480px; }
+  .kicker { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); }   /* optional navigation label; use only when it helps */
+  h1, h2 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { font-size: var(--t-title); line-height: 64px; }
+  .lead { font-size: var(--t-lead); line-height: 48px; color: var(--ink-2); margin-top: 24px; max-width: 1280px; text-wrap: pretty; } /* cover and statement slides only */
+
+  /* ---------- body zone ---------- */
+  .body { grid-row: 2; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); align-content: start; min-height: 0; }
+  p, li { font-size: var(--t-body); line-height: 44px; text-wrap: pretty; }
+  p + p { margin-top: 16px; }
+  ul.points { list-style: none; display: grid; gap: 24px; }
+  ul.points li { padding-left: 32px; position: relative; }
+  ul.points.is-large { gap: 40px; }
+  ul.points.is-large li { font-size: var(--t-lead); line-height: 52px; }
+  ul.points li::before { content: ""; position: absolute; left: 0; top: calc(0.5lh - 1px); width: 12px; height: 2px; background: var(--ink-3); }
+  strong { font-weight: 600; }
+  .muted { color: var(--ink-3); }
+  .col-1-5 { grid-column: 1 / 6; } .col-1-6 { grid-column: 1 / 7; } .col-1-7 { grid-column: 1 / 8; } .col-1-8 { grid-column: 1 / 9; }
+  .col-6-13 { grid-column: 6 / 13; } .col-7-13 { grid-column: 7 / 13; } .col-8-13 { grid-column: 8 / 13; } .col-9-13 { grid-column: 9 / 13; }
+
+  /* ---------- footer zone: source left, page number right ---------- */
+  .slide > footer { grid-row: 3; display: flex; justify-content: space-between; align-items: end; gap: 48px; padding-top: 32px;
+    font-size: var(--t-meta); line-height: 28px; color: var(--ink-3); }
+  .slide > footer .source { max-width: 1400px; }
+  .slide > footer .meta { white-space: nowrap; }
+
+  /* ---------- slide types ---------- */
+  .s-cover { grid-template-rows: 1fr auto; padding-bottom: 120px; }
+  .s-cover > div { grid-row: 2; }
+  .s-cover h1 { font-size: var(--t-display); line-height: 1.04; letter-spacing: -0.03em; max-width: 1560px; text-wrap: balance; }
+  .s-cover .lead { margin-top: 32px; }
+  .s-cover .meta { margin-top: 64px; font-size: var(--t-small); color: var(--ink-3); }
+
+  .s-statement { grid-template-rows: 1fr auto; }
+  .s-statement > div { grid-row: 1; align-self: center; }
+  .s-statement > footer { grid-row: 2; }
+  .s-statement h2 { font-size: 80px; line-height: 92px; letter-spacing: -0.02em; max-width: 1500px; }
+
+  .s-section { align-content: end; padding-bottom: 160px; background: var(--ink); color: var(--bg); }
+  .s-section .kicker { color: color-mix(in srgb, var(--bg) 60%, transparent); }
+  .s-section h2 { font-size: 80px; line-height: 92px; }
+
+  .s-figures .body { align-content: center; }
+  .figures { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); column-gap: var(--gutter); border-top: 1px solid var(--line); }
+  .figure { padding-top: 32px; padding-right: 32px; }
+  .figure .value { font-size: var(--t-figure); line-height: 1; font-weight: 500; letter-spacing: -0.02em; }
+  .figure .value.is-key { color: var(--accent); }
+  .figure .label { font-size: var(--t-small); line-height: 32px; color: var(--ink-2); margin-top: 16px; }
+  .figure .delta { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); }
+
+  table.data { width: 100%; border-collapse: collapse; font-size: var(--t-small); line-height: 32px; }
+  table.data th { text-align: left; font-weight: 500; color: var(--ink-3); padding: 0 16px 12px 0; border-bottom: 1px solid var(--line); }
+  table.data td { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line); }
+  table.data .num { text-align: right; }
+  table.data tr.is-key td { color: var(--ink); font-weight: 600; }
+  table.data td:not(:first-child) { color: var(--ink-2); }
+
+  .note { font-size: var(--t-lead); line-height: 48px; color: var(--ink-2); }   /* commentary style; compose beside the relevant evidence */
+  .note + .note { margin-top: 24px; }
+  .caption { font-size: var(--t-small); line-height: 32px; color: var(--ink-3); margin-top: 16px; }   /* measure, unit, period under a chart */
+
+  /* charts drawn by deck.chart.bars(); text inherits the deck type */
+  svg.chart text { font-family: var(--font-ui); font-size: 24px; fill: var(--ink-3); }
+  svg.chart .value { font-family: var(--font-ui); font-size: 28px; fill: var(--ink-2); }
+  svg.chart .value.is-key { fill: var(--accent); font-weight: 600; }
+
+  /* Additional compositions. Use the form that fits the evidence. */
+  .s-plate > header { max-width: none; padding-bottom: 32px; }
+  .s-plate .body { display: block; }
+  .s-compare .body { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }
+  .s-read .body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; }
+  .s-image .body { display: block; position: relative; }
+  .s-image .body > img { width: 100%; height: 100%; object-fit: cover; }
+  svg.diagram { display: block; width: 100%; height: 100%; overflow: visible; }
+  svg.diagram text { font-family: var(--font-ui); }
+
+  /* ---------- builds: off by default, opt in per element with data-build ---------- */
+  [data-build] { transition: opacity 240ms cubic-bezier(.22,1,.36,1), transform 240ms cubic-bezier(.22,1,.36,1); }
+  .slide [data-build]:not(.is-built) { opacity: 0; transform: translateY(8px); }
+  @media (prefers-reduced-motion: reduce) { [data-build] { transition: none; } }
+
+  /* ---------- print: every slide on its own 1920 × 1080 page ---------- */
+  @page { size: 1920px 1080px; margin: 0; }
+  @media print {
+    html, body { background: none; overflow: visible; height: auto; }
+    #stage { position: static; transform: none !important; width: 1920px; height: auto; }
+    .slide { position: relative; visibility: visible; break-after: page; }
+    .slide [data-build] { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<main id="stage">
+
+  <!-- 1. Cover: the deal in one line, not a greeting -->
+  <section class="slide s-cover">
+    <div>
+      <h1>What the company does, for whom, and why now</h1>
+      <p class="lead">One sentence that a buyer would repeat to their investment committee</p>
+      <p class="meta">Project name · Strictly confidential · Adviser · Month 2026</p>
+    </div>
+  </section>
+
+  <!-- 2. Content slide: action title, related evidence, source -->
+  <section class="slide">
+    <header>
+      <h2>A useful title states the finding or names the explanation</h2>
+    </header>
+    <div class="body">
+      <div class="col-1-8"><svg class="chart" data-chart='{"type":"bars","labels":["2021","2022","2023","2024","2025"],"values":[3.9,5.6,7.9,10.1,12.4],"key":4,"decimals":1}'></svg><p class="caption">Measure, unit and period</p></div>
+      <div class="col-9-13"><p class="note">Commentary beside the evidence: what the reader should notice, and the caveat.</p></div>
+    </div>
+    <footer><span class="source">Illustrative starter data; replace with a documented source</span><span class="meta">Project name · Section · <span class="page"></span></span></footer>
+  </section>
+
+</main>
+<script>
+/* ---------- deck controller: navigation, scaling, builds, and a tiny chart helper ---------- */
+(() => {
+  const stage = document.getElementById("stage");
+  const slides = [...stage.querySelectorAll(".slide")];
+  let index = 0, step = 0;
+  const builds = (s) => [...s.querySelectorAll("[data-build]")].sort((a, b) => (+a.dataset.build || 0) - (+b.dataset.build || 0));
+
+  function fit() {
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `scale(${k}) translate(-50%, -50%)`;
+  }
+  function show(i, opts = {}) {
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, n) => s.classList.toggle("is-active", n === index));
+    const b = builds(slides[index]);
+    step = opts.instant || opts.end ? b.length : 0;
+    b.forEach((el, n) => el.classList.toggle("is-built", n < step));
+    if (!opts.instant) history.replaceState(null, "", `#${index + 1}`);
+  }
+  function next() { const b = builds(slides[index]); if (step < b.length) { b[step++].classList.add("is-built"); } else show(index + 1); }
+  function prev() { if (step > 0) { builds(slides[index])[--step].classList.remove("is-built"); } else show(index - 1, { end: true }); }
+
+  // page numbers and the ghost deck title for each slide
+  slides.forEach((s, n) => { const p = s.querySelector("footer .page"); if (p) p.textContent = n + 1; });
+
+  addEventListener("keydown", (e) => {
+    if (e.target.closest?.("input, textarea, select, button, a, [contenteditable=true]")) return;
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
+    if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
+    if (e.key === "Home") show(0);
+    if (e.key === "End") show(slides.length - 1);
+    if (e.key === "f" || e.key === "F") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    if (e.key === "p" || e.key === "P") print();
+  });
+  let x0 = null;
+  addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) dx < 0 ? next() : prev(); x0 = null; });
+  addEventListener("resize", fit);
+
+  /* Bars with direct labels: one neutral series, the accent on the bar that matters (key),
+     no gridlines, no legend, no axis box. Values print above the bars in the deck's format.
+     data-chart: {"type":"bars","labels":[…],"values":[…],"key":index,"decimals":1,"prefix":"€","suffix":"m","height":560} */
+  const fmt = (v, d, locale) => v.toLocaleString(locale, { minimumFractionDigits: d, maximumFractionDigits: d });
+  function bars(svg, cfg) {
+    // Drawn at the column's own width so chart text keeps the deck's sizes (24 px = 12 pt)
+    const W = cfg.width ?? (svg.parentElement.clientWidth || 1144), H = cfg.height ?? 560, padB = 56, padT = 56;
+    const locale = document.documentElement.lang === "fi" ? "fi-FI" : "en-GB";
+    if (!Array.isArray(cfg.values) || !cfg.values.length || cfg.values.some(v => !Number.isFinite(v) || v < 0) || cfg.labels?.length !== cfg.values.length) {
+      throw new Error("The starter bars helper requires matched labels and finite non-negative values; use another chart for other data.");
+    }
+    const n = cfg.values.length, gap = cfg.gap ?? 0.36;
+    const max = (Math.max(...cfg.values) || 1), step = W / n, w = step * (1 - gap);
+    const css = getComputedStyle(document.documentElement);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", "100%");
+    let out = `<line x1="0" x2="${W}" y1="${H - padB}" y2="${H - padB}" stroke="${css.getPropertyValue("--line")}" stroke-width="2"/>`;
+    cfg.values.forEach((v, i) => {
+      const h = (H - padB - padT) * v / max, x = i * step + (step - w) / 2, y = H - padB - h, key = i === cfg.key;
+      out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${key ? css.getPropertyValue("--accent") : css.getPropertyValue("--series-3")}"/>`;
+      // same format on every label; units belong in the caption, or in prefix/suffix applied to all
+      out += `<text class="value${key ? " is-key" : ""}" x="${x + w / 2}" y="${y - 16}" text-anchor="middle">${cfg.prefix ?? ""}${fmt(v, cfg.decimals ?? 0, locale)}${cfg.suffix ?? ""}</text>`;
+      out += `<text x="${x + w / 2}" y="${H - padB + 36}" text-anchor="middle">${cfg.labels[i]}</text>`;
+    });
+    svg.innerHTML = out;
+  }
+  document.querySelectorAll("svg.chart[data-chart]").forEach((svg) => { const cfg = JSON.parse(svg.dataset.chart); if (cfg.type === "bars") bars(svg, cfg); });
+
+  window.deck = { go: (i, o) => show(i, o), next, prev, get index() { return index; }, slides, chart: { bars } };
+  fit();
+  const start = parseInt(location.hash.slice(1), 10);
+  show(Number.isFinite(start) ? start - 1 : 0, { instant: true });
+})();
+</script>
+</body>
+</html>

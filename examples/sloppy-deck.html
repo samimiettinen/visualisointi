@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Aurora 🚀 Investor Teaser</title>
+<!-- A deliberately careless deck: the negative test fixture for lint.py and render.mjs. Fictional company and numbers. -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Archivo+Black&family=Poppins:wght@300;600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-snap-type: y mandatory; }
+  body { font-family: 'Poppins', sans-serif; background: #0a0a1a; color: #e0d4ff; }
+  .slide { height: 100vh; width: 100vw; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 50px 70px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #1e3a8a 100%); }
+  .blob { position: absolute; width: 520px; height: 520px; border-radius: 50%; filter: blur(90px); opacity: .55;
+    background: radial-gradient(circle, #a855f7 0%, #ec4899 60%, transparent 70%); top: -120px; right: -100px; animation: float 6s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(30px) } }
+  h1 { font-family: 'Archivo Black', sans-serif; font-size: 86px; font-weight: 900; letter-spacing: -3px;
+    background: linear-gradient(90deg, #c084fc, #f472b6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-family: 'Space Grotesk', sans-serif; font-size: 54px; font-weight: 800; margin-bottom: 30px; color: #fff; text-shadow: 0 0 24px rgba(168,85,247,.8); }
+  .eyebrow { text-transform: uppercase; letter-spacing: .25em; font-size: 13px; color: #a78bfa; margin-bottom: 18px; font-weight: 600; }
+  .badge { display: inline-block; padding: 7px 17px; border-radius: 9999px; background: rgba(168,85,247,.2); border: 2px solid #a855f7; box-shadow: 0 0 20px rgba(168,85,247,.6); margin-bottom: 26px; font-size: 15px; }
+  .sub { font-size: 22px; opacity: .85; max-width: 780px; margin-top: 22px; font-style: italic; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 27px; margin-top: 10px; width: 100%; max-width: 1200px; }
+  .card { background: rgba(255,255,255,.06); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.15); border-left: 4px solid #ec4899; border-radius: 22px; padding: 33px 26px; transition: all .4s; box-shadow: 0 10px 40px rgba(124,58,237,.45); }
+  .card:hover { transform: scale(1.06) translateY(-8px); }
+  .icon-circle { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; font-size: 30px;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 0 30px rgba(236,72,153,.7); }
+  .card h3 { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #fff; }
+  .card p { font-size: 16px; line-height: 1.5; }
+  ul.bullets { list-style: none; text-align: left; font-size: 21px; line-height: 1.9; max-width: 900px; }
+  .stat { font-family: 'Archivo Black'; font-size: 64px; font-weight: 900; background: linear-gradient(90deg,#22d3ee,#a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+  .chart { display: flex; align-items: flex-end; gap: 22px; height: 300px; margin-top: 20px; }
+  .bar { width: 70px; border-radius: 35px 35px 6px 6px; box-shadow: 0 0 22px rgba(255,255,255,.35); position: relative; }
+  .bar span { position: absolute; bottom: -34px; left: 50%; transform: translateX(-50%); font-size: 13px; text-transform: uppercase; letter-spacing: .15em; }
+  .takeaways { background: linear-gradient(135deg, rgba(168,85,247,.25), rgba(34,211,238,.25)); border: 2px solid #22d3ee; border-radius: 26px; padding: 37px 45px; max-width: 980px; text-align: left; }
+  h2::after { content: ''; display: block; width: 90px; height: 5px; margin: 18px auto 0; background: linear-gradient(90deg, #a855f7, #ec4899); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<section class="slide">
+  <div class="blob"></div>
+  <span class="badge">✨ Confidential · Strictly Private ✨</span>
+  <h1>Project Aurora</h1>
+  <p class="sub">Unlocking Seamless, AI-Powered Growth In Nordic Field Service Management!</p>
+  <p class="eyebrow pulse" style="margin-top:40px">Investor Teaser · October 2026</p>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Introduction</p>
+  <h2>Welcome! 👋</h2>
+  <ul class="bullets">
+    <li>🚀 Aurora is a revolutionary, cutting-edge SaaS platform for field service teams</li>
+    <li>💡 We leverage AI to supercharge technician productivity by 10x</li>
+    <li>🌍 Trusted by 10,000+ technicians across the Nordics and beyond</li>
+    <li>📈 ARR grew +46%!! with best-in-class retention</li>
+    <li>🔥 Founded in 2014 in Oulu, Finland, with a world-class team of 85</li>
+    <li>💰 Strong unit economics and a robust, holistic go-to-market engine</li>
+    <li>🤝 Seeking a strategic partner to take us to the next level</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Why Aurora?</p>
+  <h2>Why Aurora?</h2>
+  <div class="cards">
+    <div class="card"><div class="icon-circle">⚡</div><h3>Lightning Fast</h3><p>Seamless scheduling that empowers your teams to do more with less.</p></div>
+    <div class="card"><div class="icon-circle">🧠</div><h3>AI-Powered</h3><p>Our magical AI engine unlocks unparalleled insights in real time.</p></div>
+    <div class="card"><div class="icon-circle">🔒</div><h3>Enterprise Ready</h3><p>Robust, secure and scalable to meet the needs of any business.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Financials</p>
+  <h2>Explosive ARR Growth</h2>
+  <div class="chart">
+    <div class="bar" style="height:90px;background:#f472b6"><span>2021 · €3.1M</span></div>
+    <div class="bar" style="height:130px;background:#a855f7"><span>2022 · €4.6M</span></div>
+    <div class="bar" style="height:175px;background:#22d3ee"><span>2023 · €6.4M</span></div>
+    <div class="bar" style="height:230px;background:#facc15"><span>2024 · €8.5M</span></div>
+    <div class="bar" style="height:290px;background:#4ade80"><span>2025 · €12.4M</span></div>
+  </div>
+  <p class="sub" style="margin-top:60px">ARR €12.4M in 2025 · EBITDA 1 850 k€ · Net revenue retention 118,5 %</p>
+</section>
+
+<section class="slide">
+  <h2>Key Takeaways</h2>
+  <div class="takeaways">
+    <p class="stat">€12.4M ARR</p>
+    <ul class="bullets">
+      <li>✅ Market leader in Nordic field service software</li>
+      <li>✅ +46% growth with industry-leading margins</li>
+      <li>✅ Massive untapped European opportunity</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="blob"></div>
+  <h1>Thank You!</h1>
+  <p class="sub">Questions? Let's build the future together 🙌</p>
+</section>
+
+<script>
+  // particle sparkle cursor trail for that premium feel
+  document.addEventListener('mousemove', e => { const s = document.createElement('div'); s.className = 'particle'; s.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;width:6px;height:6px;border-radius:50%;background:#c084fc;box-shadow:0 0 12px #c084fc;pointer-events:none`; document.body.appendChild(s); setTimeout(() => s.remove(), 600); });
+</script>
+</body>
+</html>

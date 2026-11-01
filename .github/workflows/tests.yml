@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install python-pptx
+        run: pip install python-pptx
+      - name: Linter tests and example checks
+        run: python3 scripts/test_lint.py "$RUNNER_TEMP/lint-tests"
+      - name: SKILL.md checks
+        run: python3 scripts/package.py --check
+      - name: Build the skill package
+        run: python3 scripts/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: visualisointi-skill
+          path: dist/visualisointi.zip
+
+  render-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Render every example
+        run: |
+          for deck in examples/*.html; do
+            name=$(basename "$deck" .html)
+            node scripts/render.mjs "$deck" "qa/$name" --pdf
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rendered-examples
+          path: qa/

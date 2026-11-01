@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: puuttuva-vertailupohja
+expected_outcome: |
+  A slide that shows the available figure with unit and period, does not assert the unsupported 40 % improvement, and a reply that asks for the baseline.

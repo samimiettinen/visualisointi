@@ -1,0 +1,25 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Output QA folders
+qa/
+qa_output/
+*.log
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Scratch / Temporary
+scratch/
+tmp/
+dist/
