@@ -1,71 +1,128 @@
-// render.mjs: render a deck slide by slide, measure what the audience will see, and
-// lay every slide out on one contact sheet so the deck can be judged as a sequence.
+// render.mjs — part of the visualisointi skill.
+// Renders a deck one slide at a time, measures what the reader will actually see and lays
+// the slides out on one contact sheet so the sequence can be judged as a whole.
 //
-//   node render.mjs <deck.html | deck.pptx | deck.pdf> <out-dir> [--width=1920] [--height=1080] [--no-audit] [--pdf]
+//   node render.mjs <deck.html|deck.pptx|deck.pdf> <out-dir> [--width=1920] [--height=1080] [--no-audit] [--pdf]
 //
-// HTML decks: every `.slide` element (or `section`) becomes one PNG. Decks built on
-// assets/deck.html are driven through window.deck.go(i); scroll decks are captured
-// element by element. Animations are frozen at their end state.
-// PPTX and PDF: converted with LibreOffice (soffice) and Poppler (pdftoppm) when present.
+// HTML: each `.slide` (or `section`) becomes one PNG. Decks built on assets/deck.html are
+// stepped with window.deck.go(i); other decks are captured element by element. Animations
+// and builds are frozen in their final state. Files beside the deck (images, fonts, CSS)
+// are answered from disk through Playwright request routing, so no local server is needed.
+// PPTX and PDF: LibreOffice (soffice) converts to PDF and Poppler (pdftoppm) rasterises it.
 //
-// Writes  <out>/slide-01.png …, <out>/contact-sheet.png, and for HTML <out>/audit.json
-// plus a readable <out>/audit.md: per slide the smallest text in points, the number of
-// sizes, families, left edges and words, low-contrast text and anything overflowing.
-// Licensing: ../LICENSE.
+// Output: <out>/slide-01.png …, <out>/contact-sheet.png and, for HTML, <out>/audit.json and
+// <out>/audit.md: smallest text in points, sizes, families, left edges, words, low contrast,
+// overflow and figures broken across lines, per slide.
 
 import { createRequire } from "node:module";
-import { createServer } from "node:http";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, copyFileSync, rmSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, dirname, extname, join, normalize, resolve } from "node:path";
+import { basename, dirname, extname, join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const args = process.argv.slice(2);
-const flag = (name, dflt) => args.find((a) => a.startsWith(`--${name}=`))?.split("=")[1] ?? dflt;
-const [input, outArg] = args.filter((a) => !a.startsWith("--"));
-if (!input || !outArg) {
-  console.error("usage: node render.mjs <deck.html|deck.pptx|deck.pdf> <out-dir> [--width=1920] [--height=1080] [--no-audit]");
+// ------------------------------------------------------------------ options
+const options = { width: 1920, height: 1080, audit: true, pdf: false };
+const positional = [];
+for (const arg of process.argv.slice(2)) {
+  const m = /^--([a-z-]+)(?:=(.*))?$/.exec(arg);
+  if (!m) { positional.push(arg); continue; }
+  const [, key, value] = m;
+  if (key === "width" || key === "height") options[key] = Number(value);
+  else if (key === "no-audit") options.audit = false;
+  else if (key === "pdf") options.pdf = true;
+  else { console.error(`Unknown option --${key}`); process.exit(1); }
+}
+const [input, outArg] = positional;
+if (!input || !outArg || !options.width || !options.height) {
+  console.error("usage: node render.mjs <deck.html|deck.pptx|deck.pdf> <out-dir> [--width=1920] [--height=1080] [--no-audit] [--pdf]");
   process.exit(1);
 }
-const W = Number(flag("width", 1920));
-const H = Number(flag("height", 1080));
-const audit = !args.includes("--no-audit");
-const wantPdf = args.includes("--pdf");
+const W = options.width;
+const H = options.height;
+const audit = options.audit;
+const wantPdf = options.pdf;
 const out = resolve(outArg);
 mkdirSync(out, { recursive: true });
 
-async function browserKit() {
-  for (const name of ["playwright", "playwright-core"]) {
-    try { return await import(name); } catch {}
-    try { return createRequire(join(process.cwd(), "package.json"))(name); } catch {}
-    for (const root of (process.env.NODE_PATH || "").split(":").filter(Boolean)) {
-      try { return createRequire(join(root, "__clear_slides__.cjs"))(name); } catch {}
+// ------------------------------------------------------------------ environment
+const onPath = (cmd) => {
+  try { execFileSync(process.platform === "win32" ? "where" : "which", [cmd], { stdio: "ignore" }); return true; } catch { return false; }
+};
+const pad = (n) => String(n).padStart(2, "0");
+
+// Where an installed Playwright may live: beside this script, the working directory,
+// NODE_PATH entries and the global npm folder.
+function playwrightSearchRoots() {
+  const roots = [dirname(fileURLToPath(import.meta.url)), process.cwd()];
+  roots.push(...(process.env.NODE_PATH || "").split(process.platform === "win32" ? ";" : ":").filter(Boolean));
+  try { roots.push(execFileSync("npm", ["root", "-g"], { stdio: ["ignore", "pipe", "ignore"] }).toString().trim()); } catch { /* npm missing */ }
+  return roots;
+}
+
+let playwright;
+async function loadPlaywright() {
+  if (playwright) return playwright;
+  for (const root of playwrightSearchRoots()) {
+    const lookup = createRequire(join(root, "noop.js"));
+    for (const pkg of ["playwright", "playwright-core"]) {
+      let entry;
+      try { entry = lookup.resolve(pkg); } catch { continue; }
+      const mod = await import(pathToFileURL(entry).href);
+      playwright = mod.chromium ? mod : mod.default;
+      return playwright;
     }
-    try { return createRequire(join(execFileSync("npm", ["root", "-g"]).toString().trim(), "x"))(name); } catch {}
   }
-  console.error("Playwright is not installed. Run `npm i -D playwright && npx playwright install chromium`.");
+  console.error("Playwright was not found. Install it where you run the script: npm install playwright && npx playwright install chromium");
   process.exit(1);
 }
-const chrome = [process.env.CHROME_PATH, "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium"].find((p) => p && existsSync(p));
 
-const has = (cmd) => { try { execFileSync("which", [cmd], { stdio: "ignore" }); return true; } catch { return false; } };
-const pad = (n) => String(n).padStart(2, "0");
+// A system Chrome or Chromium is preferred when present, so a Playwright browser download is optional.
+function systemBrowser() {
+  const fromEnv = [process.env.CHROME_PATH, process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH];
+  const known = {
+    darwin: ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/Applications/Chromium.app/Contents/MacOS/Chromium"],
+    linux: ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium", "/usr/bin/chromium-browser"],
+    win32: ["C:/Program Files/Google/Chrome/Application/chrome.exe"],
+  }[process.platform] ?? [];
+  return [...fromEnv, ...known].find((candidate) => candidate && existsSync(candidate));
+}
+const browserPath = systemBrowser();
+const launch = async () => (await loadPlaywright()).chromium.launch(browserPath ? { executablePath: browserPath } : {});
+
+// ------------------------------------------------------------------ HTML: serve the deck folder through routing
+// The deck opens under a private origin; each request to it is answered from the deck's
+// folder on disk (content type from the file extension). Other requests, such as a hosted
+// web font, go to the network unchanged.
+const DECK_ORIGIN = "http://deck.localhost";
+async function openDeck(page, file) {
+  const folder = dirname(file);
+  await page.route(`${DECK_ORIGIN}/**`, (route) => {
+    const wanted = decodeURIComponent(new URL(route.request().url()).pathname);
+    const onDisk = resolve(folder, `.${wanted}`);
+    const inside = onDisk.startsWith(folder + sep);
+    if (!inside || !existsSync(onDisk) || !statSync(onDisk).isFile()) return route.fulfill({ status: 404, body: "" });
+    return route.fulfill({ path: onDisk });
+  });
+  const url = `${DECK_ORIGIN}/${encodeURIComponent(basename(file))}?render`;
+  await page.goto(url, { waitUntil: "networkidle" }).catch(() => page.goto(url));
+}
 
 // ---------------------------------------------------------------- PPTX / PDF → PNG
 function officeToPngs(file) {
   let pdf = file;
   if (extname(file).toLowerCase() !== ".pdf") {
-    const soffice = ["soffice", "libreoffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice"].find((c) => c.startsWith("/") ? existsSync(c) : has(c));
+    const soffice = ["soffice", "libreoffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice"].find((c) => c.startsWith("/") ? existsSync(c) : onPath(c));
     if (!soffice) {
       console.error("LibreOffice is needed to render .pptx (brew install --cask libreoffice). Or export the deck to PDF from PowerPoint and pass the PDF.");
       process.exit(1);
     }
-    const tmp = join(tmpdir(), `unslop-${Date.now()}`);
+    const tmp = join(tmpdir(), `visualisointi-${Date.now()}`);
     mkdirSync(tmp, { recursive: true });
     execFileSync(soffice, ["--headless", "--convert-to", "pdf", "--outdir", tmp, file], { stdio: "ignore", timeout: 180000 });
     pdf = join(tmp, basename(file).replace(/\.[^.]+$/, ".pdf"));
   }
-  if (!has("pdftoppm")) {
+  if (!onPath("pdftoppm")) {
     console.error("Poppler's pdftoppm is needed to rasterise the PDF (brew install poppler).");
     process.exit(1);
   }
@@ -79,18 +136,6 @@ function officeToPngs(file) {
   });
 }
 
-// ---------------------------------------------------------------- static server for HTML
-function serve(root) {
-  const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".avif": "image/avif", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".woff": "font/woff", ".json": "application/json" };
-  const server = createServer((req, res) => {
-    const path = normalize(join(root, decodeURIComponent(req.url.split("?")[0])));
-    if (!path.startsWith(root) || !existsSync(path)) { res.writeHead(404); return res.end(); }
-    res.writeHead(200, { "content-type": types[extname(path).toLowerCase()] ?? "application/octet-stream" });
-    res.end(readFileSync(path));
-  });
-  return new Promise((done) => server.listen(0, "127.0.0.1", () => done(server)));
-}
-
 const FREEZE = `
   *, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
     transition: none !important; caret-color: transparent !important; }
@@ -99,7 +144,7 @@ const FREEZE = `
 
 // Runs inside the page for one slide element: measures what the audience sees.
 function measure(slideIndex) {
-  const slides = window.__unslopSlides;
+  const slides = window.__deckSlides;
   const slide = slides[slideIndex];
   const sr = slide.getBoundingClientRect();
   const scale = 1920 / sr.width; // normalised geometry
@@ -186,19 +231,15 @@ function measure(slideIndex) {
 }
 
 async function renderHtml(file) {
-  const root = dirname(file);
-  const server = await serve(root);
-  const { chromium } = await browserKit();
-  const browser = await chromium.launch(chrome ? { executablePath: chrome } : {});
+  const browser = await launch();
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
-  const url = `http://127.0.0.1:${server.address().port}/${encodeURIComponent(basename(file))}?render`;
-  await page.goto(url, { waitUntil: "networkidle" }).catch(() => page.goto(url));
+  await openDeck(page, file);
   await page.addStyleTag({ content: FREEZE });
   await page.evaluate(() => document.fonts.ready);
   const count = await page.evaluate(() => {
     let slides = [...document.querySelectorAll(".slide")];
     if (!slides.length) slides = [...document.querySelectorAll("section")];
-    window.__unslopSlides = slides;
+    window.__deckSlides = slides;
     // scroll decks reveal content with .visible / .active classes; the engine shows one slide at a time itself
     if (typeof window.deck?.go !== "function") slides.forEach((s) => s.classList.add("visible", "active", "is-active"));
     return slides.length;
@@ -208,11 +249,11 @@ async function renderHtml(file) {
   const pngs = [], report = [];
   for (let i = 0; i < count; i++) {
     if (driven) await page.evaluate((n) => window.deck.go(n, { instant: true }), i);
-    else await page.evaluate((n) => window.__unslopSlides[n].scrollIntoView({ block: "start" }), i);
+    else await page.evaluate((n) => window.__deckSlides[n].scrollIntoView({ block: "start" }), i);
     await page.waitForTimeout(120);
     const target = join(out, `slide-${pad(i + 1)}.png`);
-    const handle = driven ? (await page.$("#stage, .stage")) ?? (await page.evaluateHandle((n) => window.__unslopSlides[n], i))
-                          : await page.evaluateHandle((n) => window.__unslopSlides[n], i);
+    const handle = driven ? (await page.$("#stage, .stage")) ?? (await page.evaluateHandle((n) => window.__deckSlides[n], i))
+                          : await page.evaluateHandle((n) => window.__deckSlides[n], i);
     await handle.screenshot({ path: target });
     pngs.push(target);
     if (audit) report.push(await page.evaluate(measure, i));
@@ -224,13 +265,11 @@ async function renderHtml(file) {
     console.log(`pdf → ${pdfPath}`);
   }
   await browser.close();
-  server.close();
   return { pngs, report };
 }
 
 async function contactSheet(pngs) {
-  const { chromium } = await browserKit();
-  const browser = await chromium.launch(chrome ? { executablePath: chrome } : {});
+  const browser = await launch();
   const cols = pngs.length <= 4 ? 2 : pngs.length <= 9 ? 3 : 4;
   const page = await browser.newPage({ viewport: { width: 1800, height: 900 } });
   const cells = pngs.map((p, i) => {

@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""slop_lint.py: static review candidates for a deck; not an AI-authorship detector.
+"""lint.py: static review candidates for a deck (part of the visualisointi skill).
 
 Usage:
-  python3 slop_lint.py <file.html|file.css|file.pptx|folder> [--json] [--lang=fi|en] [--ghost]
-                       [--forbid="Real Target Oy,Buyer name"] [--mode=read|present] [--strict-style]
+  python3 lint.py <file.html|file.css|file.pptx|folder> [--json] [--lang=fi|en] [--ghost]
+                  [--forbid="Real Target Oy,Buyer name"] [--mode=read|present] [--strict-style]
 
-  --ghost   also print the ghost deck: the slide titles alone, in order
-  --forbid  terms that must not appear anywhere (codename hygiene): slide text,
-            notes, file properties. Case-insensitive.
+  --ghost         also print the ghost deck: the slide titles alone, in order
+  --forbid        terms that must not appear anywhere (codename hygiene): slide text,
+                  notes, file properties. Case-insensitive.
+  --lang          fi or en. Without it the language is read from <html lang> and the
+                  text itself. Finnish decks get the F checks (Kielitoimisto norms).
+  --mode          read (default) or present; changes the density hint only.
+  --strict-style  report style signals at full severity instead of as context.
 
 Reads HTML, CSS, JSX/TSX/Vue/Svelte, Markdown and .pptx. Prints one line per
-finding with the sign id from references/signs.md, where it lives and the fix.
+finding with the signal id from references/signs.md, where it lives and the fix.
 The scan is a first pass, not a verdict: it finds candidates fast, the eyes on
 the rendered slides decide. Exit code 0 always, so it never blocks a pipeline.
 
@@ -224,6 +228,85 @@ def line_of(src: str, pos: int) -> int:
     return src.count("\n", 0, pos) + 1
 
 
+# ---------------------------------------------------------------- Finnish (F checks)
+
+FI_WORDS = re.compile(r"\b(ja|on|että|ei|oli|tai|sekä|kun|mutta|vuonna|vuodessa|myös|kanssa|jonka|joka|ovat|liikevaihto|käyttökate|lähde|milj)\b", re.I)
+EN_WORDS = re.compile(r"\b(the|and|of|to|is|with|for|that|was|are|from|revenue|source)\b", re.I)
+HTML_LANG_RE = re.compile(r"<html\b[^>]*\blang=[\"']?([a-zA-Z]{2})", re.I)
+
+F_RULES = [
+    # id, severity, pattern, what, fix
+    ("F2", "medium", re.compile(r"\d%"), "Percent sign without a space",
+     "Finnish: 46 %, 3,2 %-yks. (non-breaking space before %)"),
+    ("F3", "low", re.compile(r"(?:^|(?<=[\s(\u00a0]))-\d"), "Hyphen used as a minus sign",
+     "Use the minus sign − (U+2212): −0,6"),
+    ("F4", "low", re.compile(r"(?<![\d.,:/\-])\b\d{1,4}(?:,\d+)?-\d{1,4}(?:,\d+)?\b(?![\-/.]\d)"),
+     "Hyphen in a range", "Use an en dash without spaces: 2024–2026, 10,5–12,5x"),
+    ("F5", "low", re.compile("[\"“„]"), "Straight or English/German quotation marks",
+     "Finnish quotes are the same at both ends: ”näin”, ’näin’"),
+    ("F6", "medium", re.compile(r"\b\d+\.\d+(?=\s?(?:%|M€|k€|MEUR|milj|mrd|€|x\b|pt\b))"), "Decimal point in Finnish text",
+     "Decimal comma: 12,4 M€, 11,4x"),
+    ("F7", "low", re.compile(r"€\s?\d"), "Currency symbol before the number",
+     "Finnish: 12,4 M€ or 12,4 milj. €, one form per deck"),
+]
+
+
+def content_lang(texts: list[str]) -> str:
+    joined = " ".join(texts)
+    fi = len(FI_WORDS.findall(joined)) + joined.count("ä") // 4 + joined.count("ö") // 4
+    en = len(EN_WORDS.findall(joined))
+    if fi >= 3 and fi > en * 1.2:
+        return "fi"
+    return "en" if en >= 3 else "unknown"
+
+
+def resolve_lang(explicit: str, texts: list[str], html_src: str | None = None) -> tuple[str, str | None]:
+    """Return (language for the checks, declared html lang or None)."""
+    declared = None
+    if html_src is not None:
+        m = HTML_LANG_RE.search(html_src[:2000])
+        declared = m.group(1).lower() if m else ""
+    if explicit in ("fi", "en"):
+        return explicit, declared
+    detected = content_lang(texts)
+    if detected == "fi" or declared == "fi":
+        return "fi", declared
+    return "en", declared
+
+
+def finnish_title_case(text: str) -> bool:
+    words = re.findall(r"[A-Za-zÅÄÖåäöÉé][\w'’:-]*", text)
+    if len(words) >= 3 and all(w.isupper() for w in words) and any(len(w) > 4 for w in words):
+        return True  # ALL CAPS heading
+    rest = [w for w in words[1:] if not (w.isupper() and len(w) <= 6)]
+    caps = sum(1 for w in rest if w[0].isupper())
+    lower = len(rest) - caps
+    return caps >= 3 and lower == 0
+
+
+def check_finnish(slides: list[tuple[str, list[tuple[str, str]]]], where_file: str, declared: str | None):
+    """slides: (where, [(tag, text)]) pairs of one Finnish file."""
+    hits: dict[str, list[str]] = defaultdict(list)
+    for where, texts in slides:
+        for tag, text in texts:
+            if tag in ("h1", "h2", "h3", "title", "cover") and finnish_title_case(text):
+                hits["F1"].append(f"{where}: “{text[:50]}”")
+            for fid, _, pat, _, _ in F_RULES:
+                m = pat.search(text)
+                if m:
+                    s = max(0, m.start() - 12)
+                    hits[fid].append(f"{where}: “…{text[s:m.end() + 12]}…”")
+    if hits.get("F1"):
+        add("F1", "medium", where_file, f"Title Case or ALL CAPS in a Finnish heading ({len(hits['F1'])}×), e.g. {hits['F1'][0]}",
+            "Finnish headings use sentence case: only the first word and proper names capitalised")
+    for fid, sev, _, what, fix in F_RULES:
+        if hits.get(fid):
+            add(fid, sev, where_file, f"{what} ({len(hits[fid])}×), e.g. {hits[fid][0]}", fix)
+    if declared is not None and declared != "fi":
+        add("F8", "low", where_file, f"Finnish text but <html lang=\"{declared or 'missing'}\">",
+            "Set lang=\"fi\" so hyphenation, quotes and screen readers follow Finnish")
+
+
 def title_case_ratio(text: str) -> float:
     words = [w for w in re.findall(r"[A-Za-zÅÄÖåäö][\w'’-]*", text)]
     small = {"a", "an", "the", "and", "or", "of", "in", "on", "to", "for", "vs", "with", "by", "at"}
@@ -282,14 +365,14 @@ def check_numbers(all_text: str, where: str):
     comma_thousands = re.findall(r"\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b", all_text)
     comma_decimal = re.findall(r"\b\d+,\d{1,2}\b(?!\d)", all_text)
     space_thousands = re.findall(r"\b\d{1,3}(?:[ \u00a0\u202f]\d{3})+\b", all_text)
-    dot_decimal = re.findall(r"\b\d+\.\d{1,2}\b", all_text)
+    dot_decimal = re.findall(r"(?<![\d.])(?<!klo )\b\d+\.\d{1,2}\b(?!\.\d)", all_text)  # not dates 31.1.2026 or times klo 9.30
     if (comma_thousands or dot_decimal) and (comma_decimal or space_thousands):
         a = (comma_thousands or dot_decimal)[0]
         b = (comma_decimal or space_thousands)[0]
         add("N4", "medium", where, f"Mixed number conventions: {a} and {b}",
             "One convention per deck. Finnish: 1 234,5. English: 1,234.5")
     cur = Counter()
-    for m in re.finditer(r"(€|EUR|\$|USD)\s?\d[\d.,]*\s?(bn|mn|m|M|k|K)?\b|\d[\d.,\u00a0 ]*[ \u00a0\u202f]?(M€|k€|MEUR|meur|milj\. ?€|milj\. euroa|€|EUR)", all_text):
+    for m in re.finditer(r"(€|EUR|\$|USD)\s?\d[\d.,]*\s?(bn|mn|m|M|k|K)?\b|\d[\d.,\u00a0 ]*[ \u00a0\u202f]?(M€|k€|MEUR|meur|milj\. ?€|milj\. euroa|€|EUR)(?![\s\u00a0]?\d)", all_text):
         tok = m.group(0)
         if tok[0] in "€$" or tok.startswith(("EUR", "USD")):
             kind = "symbol first (€12.4M)"
@@ -480,8 +563,14 @@ def check_css(src: str, where_file: str):
 
 def check_markup(src: str, where_file: str, lang: str):
     texts = strip_tags(src)
+    is_doc = bool(re.search(r"<html\b", src[:2000], re.I))
+    lang, declared = resolve_lang(lang, [t for _, t in texts], src if is_doc else None)
     check_copy(texts, where_file, lang)
     check_numbers("\n".join(t for _, t in texts), where_file)
+    if lang == "fi":
+        chunks = re.split(r"<section\b", src)
+        per_slide = [(f"slide {i}", strip_tags("<section" + c)) for i, c in enumerate(chunks[1:], 1)] if len(chunks) > 1 else [("", texts)]
+        check_finnish(per_slide, where_file, declared if is_doc else None)
     # Particle, parallax, tilt and cursor-trail code
     for pat, what in [(r"particle", "Particle background"), (r"parallax", "Parallax"), (r"\btilt\b|rotateY\(\$\{", "3D tilt on hover"),
                       (r"cursor[-_ ]?trail|custom[-_ ]?cursor", "Custom cursor or trail"), (r"glitch|scramble", "Glitch or scramble text")]:
@@ -562,6 +651,7 @@ def check_pptx(path: Path, lang: str):
     caps_runs = 0
     bold_runs = runs = 0
     fills = Counter()
+    slide_texts = []
 
     for idx, slide in enumerate(prs.slides, 1):
         where = f"{path.name} slide {idx}"
@@ -640,7 +730,7 @@ def check_pptx(path: Path, lang: str):
             if is_title:
                 title_pos.append((idx, shape.left, shape.top, shape.width))
         title_text = next((t for k, t in texts if k == "title"), "")
-        check_copy([("cover", t) if (k == "title" and idx == 1) else (k, t) for k, t in texts], where, lang)
+        slide_texts.append((f"slide {idx}", [("cover", t) if (k == "title" and idx == 1) else (k, t) for k, t in texts]))
         notes = ""
         try:
             if slide.has_notes_slide:
@@ -655,7 +745,7 @@ def check_pptx(path: Path, lang: str):
         if bullets > 6:
             add("N2", "medium", where, f"{bullets} bullets", "Five at most, or a table, chart or split")
         if min_pt is not None and min_pt < 9:
-            add("T7", "high", where, f"Text at {min_pt:.0f} pt", "12 pt floor for read decks, 18 pt for projected text; footnotes 9 to 10 pt only")
+            add("T7", "high", where, f"Text at {min_pt:.0f} pt", "Nothing below 9 pt; body, label and source ranges per reading mode are in references/tokens.md")
         if len(lefts) > 6:
             add("L2", "low", where, f"{len(lefts)} different left edges", "Snap to the column grid; fewer, shared edges")
         if not any(t == "title" for t, _ in texts) and idx > 1:
@@ -687,7 +777,12 @@ def check_pptx(path: Path, lang: str):
         if is_ai_purple(parse_color("#" + c)):
             add("C5", "low", path.name, f"Purple/violet fill #{c}", "Keep only if it is the real brand colour")
             break
+    lang, _ = resolve_lang(lang, all_text)
+    for where, texts in slide_texts:
+        check_copy(texts, f"{path.name} {where}", lang)
     check_numbers("\n".join(all_text), path.name)
+    if lang == "fi":
+        check_finnish(slide_texts, path.name, None)
 
 
 # ---------------------------------------------------------------- deck integrity
@@ -701,7 +796,11 @@ METRICS = {
     "employees": r"\b(employees|FTEs?|headcount|henkilöstö|työntekijää)\b",
 }
 NUM_RE = re.compile(r"(€|EUR|\$|USD)?\s?(\d{1,3}(?:[ ,.\u00a0\u202f]\d{3})*(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s?(bn|mn|m|M€|k€|MEUR|M|k|K|milj\.?|%|€)?(?![\w])")
-PLACEHOLDER_RE = re.compile(r"\[(?:company|client|target|name|x+|tbd|insert[^\]]*|year)\]|\bTBD\b|\bXX+\b|\bYYYY\b|lorem ipsum|click to add|lisää otsikko|napsauttamalla", re.I)
+PLACEHOLDER_RE = re.compile(
+    r"\[(?:company|client|target|name|x+|tbd|insert[^\]]*|year|date|source|figure|"
+    r"yhtiö|yritys|kohde|kohdeyhtiö|asiakas|nimi|vuosi|päivämäärä|pvm|lähde|luku|summa|otsikko|lisää[^\]]*)\]"
+    r"|\bTBD\b|\bTBA\b|\bXX+\b|\bxx[,.]x\b|\bYYYY\b|lorem ipsum|click to add|lisää otsikko|napsauttamalla|täydennetään",
+    re.I)
 GENERATOR_RE = re.compile(r"generated (with|by)|made with (gamma|beautiful\.ai|tome|canva|chatgpt|claude)|as an ai\b|i hope this helps|python-pptx|pptxgenjs", re.I)
 COUNT_TITLE_RE = re.compile(r"^(\d+|two|three|four|five|six|seven|kaksi|kolme|neljä|viisi|kuusi)\s+[a-zäöå]+", re.I)
 WORD_NUM = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "kaksi": 2, "kolme": 3, "neljä": 4, "viisi": 5, "kuusi": 6}
@@ -766,8 +865,9 @@ def check_deck(forbid: list[str]):
     dashes = 0
     for sl in SLIDES:
         text = sl["text"]
-        for m in re.finditer(r"(€|\$)?\d+[.,]\d{3,}\s?(m|M|mn|M€|MEUR|milj)\b|\b\d+[.,]\d{2,}\s?%", text):
-            add("N8", "low", sl["where"], f"Precision review: {m.group(0)}", "Round to what the decision needs: €47.4m, 46 %")
+        for m in re.finditer(r"(€|\$)?\d+[.,]\d{3,}\s?(m|M|mn|M€|MEUR|milj)\b|\b\d+[.,]\d{2,}\s?%"
+                             r"|\b\d{1,3}(?:[ \u00a0\u202f]\d{3}){2,}\s?(?:€|EUR)|(?:€|\$)\d{1,3}(?:,\d{3}){2,}\b", text):
+            add("N8", "low", sl["where"], f"Precision review: {m.group(0)}", "Round to what the decision needs: €47.4m, 47,4 M€, 46 %")
             break
         ph = PLACEHOLDER_RE.search(text + " " + sl["title"])
         if ph:

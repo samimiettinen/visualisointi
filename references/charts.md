@@ -1,6 +1,6 @@
 # Charts, analytical diagrams and tables
 
-Start with the question and available evidence. Read [visual-grammar.md](visual-grammar.md) for mechanisms, maps, architecture and other forms beyond statistical charts. [human-guides.md](human-guides.md) links fuller visual vocabularies.
+Start with the question and available evidence. Read [visual-grammar.md](visual-grammar.md) for mechanisms, maps, architecture and other forms beyond statistical charts. [human-guides.md](human-guides.md) links external chart vocabularies.
 
 ## Selection
 
@@ -35,6 +35,8 @@ A complex chart is justified by a complex relationship, not by novelty. Explain 
 Choose panel ordering and consistent scales to support the intended comparison. Put the most important within-panel comparison together. A shared reference can help readers compare across panels. A repeated form is useful here, including across successive slides. If panels become too small, group them or provide a detailed read version rather than silently shrinking labels.
 
 ## Finance forms
+
+A worked Finnish example of all four main forms, with figures that reconcile across pages, is in [rahoitus.html](../examples/rahoitus.html).
 
 **Valuation range / football field.** Use horizontal intervals by method, with one value basis and unit. State the underlying period and assumptions. Label the offer or reference line. Do not mix enterprise and equity values. Display uncertainty rather than manufacturing a precise point estimate.
 

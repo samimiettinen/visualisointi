@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: suomenkielinen-teaser-koodinimella
+expected_outcome: |
+  A four-slide Finnish HTML deck under the codename with no trace of the real name, Finnish number notation, sentence-case titles, a source line on every data slide and no title claim that the figures do not support (2023 to 2024 growth is 32.8 %, so not every year grew by a third).

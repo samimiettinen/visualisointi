@@ -41,11 +41,11 @@ Every figure carries a unit and a period, in the label, the caption or the colum
 
 ## Codenames and confidentiality
 
-- In a codename deck the real names of the target, the seller and the bidders never appear: not in text, speaker notes, chart data labels, image file names, alt text, file names or document properties. Use `slop_lint.py --forbid="Real Name Oy,Other Name"` as one check, then inspect filenames, image/alt text, notes, chart data, linked or embedded objects and properties separately. The linter does not cover all of these surfaces.
+- In a codename deck the real names of the target, the seller and the bidders never appear: not in text, speaker notes, chart data labels, image file names, alt text, file names or document properties. Use `lint.py --forbid="Real Name Oy,Other Name"` as one check, then inspect filenames, image/alt text, notes, chart data, linked or embedded objects and properties separately. The linter does not cover all of these surfaces.
 - A confidentiality line in the footer where the deal needs it, quietly: `Strictly confidential · Project Aurora`.
 - File properties must be truthful and match the project. Remove accidental scaffolding where appropriate; preserve required attribution, disclosures and provenance. Do not invent an adviser as author.
 - Disclaimers at the back of teasers and IMs, set in the body size, never in 6 pt grey.
 
 ## Placeholders
 
-Nothing ships with `[Company]`, `XX`, `TBD`, `YYYY`, `Lorem ipsum`, `Click to add title`, `Lisää otsikko`. The linter's H1 finds the usual ones. Illustrative numbers in a template are marked as illustrative in the caption.
+Nothing ships with `[Company]`, `XX`, `TBD`, `YYYY`, `Lorem ipsum`, `Click to add title`, `Lisää otsikko`. The linter's H1 finds the usual ones in English and Finnish. Illustrative numbers in a template are marked as illustrative in the caption.

@@ -1,6 +1,6 @@
 # Finnish and Nordic decks
 
-Rules that make a Finnish deck read as written in Finnish, not translated. Follow Kielitoimisto norms; if the suomen-kieli skill is available, run all Finnish copy through it.
+Rules that make a Finnish deck read as written in Finnish, not translated. Follow Kielitoimisto norms. If the suomen-kieli skill is available, run all Finnish copy through it. `lint.py` checks the mechanical part (F1–F8, see [signs.md](signs.md)); wording, compounds and register still need reading.
 
 ## Language
 
@@ -27,10 +27,19 @@ Rules that make a Finnish deck read as written in Finnish, not translated. Follo
 - Dashes: en dash with spaces as a sentence dash (` – `), no em dashes.
 - Abbreviations with a full stop: `milj.`, `mrd.`, `esim.`, `n.`; but `M€` and `MEUR` without.
 - Long compound words (`asiakastyytyväisyyskysely`, `toiminnanohjausjärjestelmä`) break narrow columns. Give Finnish text about 10 % more width than English, use `hyphens: auto` with `lang="fi"` in HTML, and insert soft hyphens (`&shy;`) in long title words. Never justify text.
-- Fonts must have proper å, ä, ö and their accents at every weight; all families in tokens.md do.
+- Fonts must have proper å, ä and ö at every weight used. Check a bold title and a light label before committing to a family.
 
 ## Bilingual decks
 
 - One language per slide; keep the same order everywhere when a slide carries two (Finnish first, then Swedish or English, the second in secondary colour).
 - Numbers follow the language of the slide. A Finnish slide uses `12,4 M€`; the English appendix uses `€12.4m`. Never mixed on one slide.
 - Titles stay parallel across language versions so the ghost decks match.
+
+## Check
+
+```bash
+python3 scripts/lint.py deck.html --lang=fi --ghost
+```
+
+Read the ghost deck aloud: Finnish titles that sound translated (`Avainhavainnot`, `Seuraavat askeleet`) usually need rewriting rather than translating.
+

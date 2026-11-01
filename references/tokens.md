@@ -1,54 +1,69 @@
-# Design system and starting values
+# Design system: the reference values
 
-A measured house template takes precedence. The following values are starting points for a new deck, not a signature look. Choose type and colour for the subject and reading conditions, then verify the rendering.
+This file is the single source for sizes, grid and colour values. SKILL.md, the engine in `assets/deck.html` and `lint.py` refer here. A measured house template takes precedence over everything below (see [brands.md](brands.md)).
 
 ## Canvas and grid
 
-Preserve an existing aspect ratio. For a new widescreen HTML deck, the supplied engine uses a fixed 1920 × 1080 canvas that scales uniformly. Its reference PowerPoint size is 13⅓ × 7½ inches, or 960 × 540 presentation points. Thus 2 canvas pixels correspond to 1 presentation point **in this particular design system**; this is not the browser's CSS px-to-pt conversion.
+- Keep an existing aspect ratio. A new widescreen deck uses a fixed 1920 × 1080 canvas that the engine scales to the window.
+- The PowerPoint widescreen page is 13⅓ × 7½ in, or 960 × 540 pt, so **2 canvas px = 1 presentation pt**. This is a convention of this design system, not the browser's CSS px-to-pt conversion.
+- Default grid in `assets/deck.html`: 96 px side margins, 88 px top, 72 px bottom, 12 columns of 122 px with 24 px gutters, 8 px spacing steps (8, 16, 24, 32, 48, 64).
+- The grid is a convenience for text and recurring layouts. A chart may span the page, a comparison may use equal halves and a diagram follows its own geometry. Optical adjustments are legitimate.
+- Keep title and footer positions stable within each recurring layout family.
 
-Start around 80–100 canvas pixels for outer margins, 24–40 for gutters and an 8-pixel spacing rhythm. A 12-column grid is a convenience. With 96-pixel side margins and 24-pixel gutters, the columns are 122 pixels wide. A chart may span the page; a comparison may use equal halves; a read page may combine columns and aligned panels. Optical adjustments are legitimate.
+## Type sizes
 
-Establish stable title and footer placements within each recurring layout. An image-led page or large diagram may use a different composition while preserving the same hierarchy. Avoid squeezing every visual into a chart-and-commentary split.
+Presentation points; canvas px are twice these values.
 
-## Typography
-
-| Role | Self-read deck, presentation pt | Speaker-led deck, presentation pt |
+| Role | Self-read deck | Speaker-led deck |
 | --- | --- | --- |
-| Main title | 24–36 | 28–44 |
-| Body | 14–18 | 22–30 |
-| Chart labels and table text | 12–16 | 18–24, larger in a large room |
-| Source and optional reference text | 9–11 | 10–12 if not part of the spoken explanation |
-| Statement or headline figure | As the composition requires | As the composition requires |
+| Cover or statement | 44–56 | 56–72 |
+| Action title (two lines at most) | 24–36 | 28–44 |
+| Lead sentence | 16–20 | 20–26 |
+| Body and annotations | 14–18 | 22–30 |
+| Chart labels and table text | 12–16 | 18–24 |
+| Sources and footnotes | 9–11 | 10–12 |
 
-These are starting ranges. Assess legibility at the expected view size and distance. A source footnote cannot carry an essential caveat the audience must read. A font's x-height, weight and rendering affect usable size.
-
-Use a small set of type roles. One family or a deliberate complementary pair is usually sufficient. Weight 700, a serif title, a meaningful italic or a compact uppercase label can be appropriate. Avoid all-heavy text, ornamental emphasis on random words and tiny tightly tracked labels. Keep the supplied brand fonts when possible.
-
-Use tabular figures where columns must align. Verify required language glyphs. No named font is guaranteed on every recipient device; inspect installation/embedding or test the intended export. A successful LibreOffice render does not prove a PowerPoint recipient has the font.
+- Nothing goes below 9 pt. A caveat the reader must see is not a footnote.
+- The engine defaults are a self-read deck: title 26 pt (52 px), body 15 pt (30 px), labels 12 pt (24 px), sources 10 pt (20 px).
+- One family, or one deliberate pair, and five or six sizes are usually enough. A rich diagram may need more label roles; that is fine when each size has a job.
+- Use tabular lining figures where columns must align (`font-variant-numeric: tabular-nums lining-nums`), `text-wrap: balance` for titles and `text-wrap: pretty` for paragraphs.
+- Large titles take −0.01 to −0.02 em letter-spacing; body text stays at normal spacing.
+- Check glyph coverage (å, ä, ö at every weight) and whether the recipient has the font. A LibreOffice render does not prove a PowerPoint recipient has it.
 
 ## Colour roles
 
-Name the roles before selecting swatches:
+Name the roles before choosing swatches:
 
-- **Surface and text:** clear contrast and a coherent light or dark system.
-- **Emphasis:** the item currently discussed or compared.
-- **Categorical:** stable identities across charts, diagrams and pages.
-- **Sequential:** increasing magnitude with an ordered ramp.
-- **Diverging:** departure around a meaningful midpoint.
-- **Status:** an explicitly defined state, accompanied by a word or symbol.
+- **Surface and text:** `--bg`, `--raised`, `--ink`, `--ink-2`, `--ink-3`.
+- **Emphasis:** `--accent`, for the item the page is about.
+- **Categorical:** `--category-a`, `--category-b`, … stable identities across charts and pages.
+- **Context series:** `--series-1` to `--series-3`, neutrals for series that are not the point.
+- **Sequential and diverging:** ordered ramps for magnitude, two hues around a meaningful midpoint.
+- **Status:** `--positive`, `--negative`, always with a word or symbol as well.
 
-There is no universal one-accent limit. Use the smallest palette that communicates the distinctions accurately. Distinguish categories through labels or shape as well as hue. Sequential and diverging data ramps are useful gradients; a decorative wash is a different design choice.
+There is no fixed number of accents. Use the smallest palette that keeps the distinctions accurate, and label categories directly as well as by hue.
 
-For readability, aim for at least 4.5:1 text contrast, or 3:1 for sufficiently large text. Essential non-text marks need visible contrast too. Check actual backgrounds, including images, transparency and neighbouring fills. This is a design check, not a claim of complete accessibility conformance.
+## Contrast
 
-A possible starting palette is dark ink #182B33, pale background #F5F4EF, teal #006B6B, rust #A34B27 and blue #3559A6. This is an example, not a prescribed palette; any text/fill combination still needs checking.
+- Text: at least 4.5:1 against its actual background; 3:1 for large text (24 px or more, or 18.5 px bold, on screen; on the canvas 48 px, or 37 px bold).
+- Data marks and boundaries the reader needs: at least 3:1 against the surface they sit on.
+- Check the real background, including `--raised` panels, images and transparency.
 
-## Images, lines and emphasis
+Engine defaults, checked against both surfaces:
 
-Use authentic imagery at sufficient resolution. Intentional full bleed is allowed; cropping must preserve evidential details. Frame a screenshot only when the frame helps orientation. Do not add generic visuals just to occupy space.
+| Token | Value | On `--bg` #ffffff | On `--raised` #f3f3f2 |
+| --- | --- | --- | --- |
+| `--ink` | #171717 | 17.9:1 | 16.1:1 |
+| `--ink-2` | #4f4f4f | 8.2:1 | 7.4:1 |
+| `--ink-3` | #666666 | 5.7:1 | 5.2:1 |
+| `--series-2` | #6b6b6b | 5.3:1 | 4.8:1 |
+| `--series-3` | #8a8a8a | 3.5:1 | 3.1:1 |
+| `--accent` | #ae5029 | 5.3:1 | 4.8:1 |
 
-Connectors and rules must survive the final display size. Diagram colour can encode roles; arrowheads and labels define direction and meaning. Use emphasis consistently. Colour plus a direct label can improve accessibility and is not redundant decoration.
+The engine's categorical defaults (teal #006b6b, blue #3559a6, rust #a34b27) are placeholders for a deck without a brand. Replace them with the brand's roles and re-check.
 
-Use motion to explain a transformation or guide a live reveal. Honour reduced-motion settings and make final static states readable. Avoid effects that compete with the explanation.
+## Images, lines and motion
 
----
+- Use authentic images at sufficient resolution. Full bleed is fine; a crop must keep the evidential detail.
+- Connectors and rules must survive the final display size. Arrowheads and labels define direction and meaning; colour reinforces them.
+- Motion explains a change or guides a live reveal. Honour reduced-motion settings and keep every static state readable, because the PDF and the printout have no animation.

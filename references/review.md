@@ -21,6 +21,14 @@ Use the contact sheet to inspect sequence and comparison. Use a brief first glan
 
 For a recurring pattern, try the longest actual label and densest required case. Check wrapping, alignment, sorting, connector attachment and chart ranges. Repair the pattern before propagating it. For a focus sequence, confirm that repeated geometry stays fixed, the active part is identifiable without colour alone and the static export explains every meaningful state. Check appendix references or links after pagination changes.
 
+## Read like the audience
+
+- **Sequence view:** on the contact sheet, can you see the sequence of questions, the related comparisons and the changes in purpose? Repetition is good when the comparison is intentional.
+- **First glance:** look briefly at one page. Find its topic, entry point and main relationship. If everything competes, repair the hierarchy; if there is nothing to inspect, improve the explanation. A five-second look is a heuristic, not a measured comprehension result.
+- **Close reading:** read labels, units, sources and caveats at the intended size. Zooming in while authoring does not prove that the page is legible on a projector.
+
+A self-review finds defects. It is not an audience test or an independent review; report those only if they actually happened.
+
 ## Findings
 
 Report specific page references, consequence and proposed remedy. Separate factual defects, readability defects and optional design improvements. Accept a style change only if it improves this brief; do not enforce a particular font, palette, word count or number of layouts.
@@ -31,9 +39,9 @@ Repair consequential defects and inspect the changed pages again. Do not stop at
 
 > Review these rendered pages for the supplied audience and purpose. Identify unsupported claims, missing context, misleading encodings, unreadable text, broken layout and visuals that fail to explain the subject. Also identify pages whose useful detail was removed in pursuit of minimalism. Give page-specific changes without inventing facts. Preserve deliberate brand and comparison choices. Distinguish necessary repairs from optional alternatives.
 
-## Regression briefs for future skill changes
+## Hard cases
 
-Use these to check decisions, not to require identical generated wording:
+These situations recur. Use them to check decisions, not as wording to reproduce:
 
 - A board read page must retain a trend, breakdown and material caveat needed for one decision. Related evidence should not be split solely to satisfy “one chart”.
 - A technical mechanism has a feedback loop and a conditional path. They should be visible and labelled, without inventing measured flow widths.

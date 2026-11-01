@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Project Aurora · Teaser</title>
 <!--
-  unslop-slides deck engine. One file, no build step, no dependencies.
+  Deck engine of the visualisointi skill. One file, no build step, no dependencies.
   The slide is a fixed 1920 × 1080 canvas scaled to the window, so what you see
   on a laptop, on a projector, in the PDF and in the rendered PNGs is the same layout.
   1 pt in PowerPoint terms = 2 px on this canvas. Keys: → ← space, Home, End, F full screen, P print.
@@ -31,14 +31,14 @@
     --line: rgba(23, 23, 23, .10);
     --ink: #16191c;            /* primary text */
     --ink-2: #4f4f4f;          /* secondary */
-    --ink-3: #737373;          /* muted: meta, sources, axis labels */
+    --ink-3: #666666;          /* muted: meta, sources, axis labels (5.2:1 on --raised) */
     /* One accent, used on a few percent of the slide */
     --accent: #c2410c;          /* hi-vis orange, 5.2:1 on white */
     --accent-ink: #ffffff;
     /* Chart neutrals: the series that are not the point */
     --series-1: #2b2b2b;
-    --series-2: #8c8c8c;
-    --series-3: #cfd4d9;
+    --series-2: #6b6b6b;
+    --series-3: #8a8a8a;      /* context series; 3:1 on --raised, label it directly */
     --positive: #2f7d4f;
     --negative: #b42318;
 
@@ -55,7 +55,7 @@
     --t-display: 112px;  /* cover and statement slides only */
     --t-title: 52px;     /* action titles, two lines at most */
     --t-lead: 36px;      /* the one sentence under a title */
-    --t-body: 30px;      /* 15 pt: read decks. Use 36 to 40 for projected talks */
+    --t-body: 30px;      /* 15 pt: read decks. Projected talks: 44–60 px (22–30 pt), see references/tokens.md */
     --t-small: 24px;     /* 12 pt: table cells, labels */
     --t-meta: 20px;      /* 10 pt: sources, footers, page numbers */
     --t-figure: 96px;    /* key figures */
@@ -176,7 +176,7 @@
 
   <section class="slide">
     <header>
-      <h2>ARR has quadrupled since 2021 and grew by at least a third in every year</h2>
+      <h2>ARR has quadrupled since 2021, growing 33–48&nbsp;% a year</h2>
     </header>
     <div class="body">
       <div class="col-1-8">
@@ -187,7 +187,7 @@
         <p class="note">Year-on-year growth was 48&nbsp;%, 39&nbsp;%, 33&nbsp;% and 46&nbsp;% from 2022 to 2025.</p>
       </div>
     </div>
-    <footer><span class="source">Source: company information</span><span class="meta">Project Aurora · Growth · <span class="page"></span></span></footer>
+    <footer><span class="source">Source: Aurora management accounts 2021–2025, ARR at 31 December. Fictional example.</span><span class="meta">Project Aurora · Growth · <span class="page"></span></span></footer>
   </section>
 
   <section class="slide s-figures">
@@ -197,10 +197,10 @@
     <div class="body">
       <div class="figures" style="--n: 2; grid-column: 1 / 11; --t-figure: 128px">
         <div class="figure is-key"><div class="value">€1.85m</div><div class="label">EBITDA, 2025</div><p class="note">Positive EBITDA in the year ARR grew 46&nbsp;%.</p></div>
-        <div class="figure"><div class="value">118.5&nbsp;%</div><div class="label">Net revenue retention, 2025</div><p class="note">Existing customers spent 18.5&nbsp;% more than a year earlier, after churn.</p></div>
+        <div class="figure"><div class="value">119&nbsp;%</div><div class="label">Net revenue retention, 2025</div><p class="note">Existing customers spent 19&nbsp;% more than a year earlier, after churn.</p></div>
       </div>
     </div>
-    <footer><span class="source">Source: company information</span><span class="meta">Project Aurora · Quality of growth · <span class="page"></span></span></footer>
+    <footer><span class="source">Source: Aurora management accounts 2025. NRR: end-2025 ARR from customers active at end-2024 ÷ their end-2024 ARR. Fictional example.</span><span class="meta">Project Aurora · Quality of growth · <span class="page"></span></span></footer>
   </section>
 
   <section class="slide s-statement">

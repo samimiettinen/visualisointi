@@ -13,6 +13,31 @@ For substantial new work, use [the design worksheet](../assets/design-worksheet.
 - For a comparison, keep the objects, measures and scales stable across related pages.
 - For a tutorial, show intermediate states where they help explain the mechanism. Label assumptions and feedback paths.
 
+## Sketch before polishing
+
+For a substantial new deck, place rough evidence blocks on a small canvas before choosing type and colour. A rough SVG, a plain table or a native slide sketch is enough.
+
+Where the form is uncertain, sketch two alternatives with the same facts. For a process with exceptions, compare a straight timeline with an actor-based route diagram: choose the route diagram if responsibility and return paths matter, the timeline if elapsed time is the question and timing evidence exists. Decide on explanatory value before styling, and do not make variants just to have them.
+
+## Reuse a pattern for its purpose
+
+A useful library stores explanations, not attractive empty layouts. Reuse only user-provided, approved or original material, and keep it in the user's workspace; never bring in confidential examples from another client.
+
+| Pattern | Question it answers | Inputs it needs | What must survive adaptation |
+| --- | --- | --- | --- |
+| Comparison plate | Which option differs on the relevant criteria? | Matched cases and definitions | Common ordering, scale and comparable evidence |
+| Route diagram | Who handles this case, including exceptions? | Actors, conditions and hand-offs | Labelled paths, boundaries and returns |
+| Decision read page | What supports this decision, and what could change it? | Finding, evidence, constraints | Main evidence and material caveats together |
+| Object study | How does this part or product work? | Authentic image or declared schematic | Orientation, meaningful features and local labels |
+| Context and focus | Which part of this system matters now? | A stable whole and a justified focus | Geometry, readable context and explicit emphasis |
+| Valuation page | What is the company worth, and on what basis? | Methods, ranges, basis (EV or equity), reference price | One value basis, labelled reference line, stated periods |
+
+When reusing a pattern, replace every inherited name, figure, date, label, chart range and note. Do not carry over a previous conclusion because it fits the layout. Masters and placeholders help recurring layouts; a complex diagram may need grouped objects instead.
+
+## One deck for a meeting and for later reading
+
+Separate the main route from optional detail in the outline. Give supporting pages descriptive titles and reference them from the main page; where the format supports links, add a return link and test it after export, otherwise use page numbers. The meeting need not visit every supporting page, but a qualification that could overturn the recommendation stays on the main page, not in notes or an appendix.
+
 ## Titles
 
 Use a takeaway when the evidence establishes it, a descriptive title when the page explains a subject, and a question when the question is real. Keep useful uncertainty: “could”, “estimated” and a range may be essential. Do not turn association into cause or an estimate into a fact.

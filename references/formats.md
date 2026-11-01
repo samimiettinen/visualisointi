@@ -6,14 +6,14 @@ Keep the requested destination and format. When improving an existing editable d
 
 `assets/deck.html` is a fixed-canvas starter with navigation, optional builds, print styling and a basic non-negative bar helper. It is not the only permitted layout or a general charting library. The example content is illustrative and must be replaced.
 
-Set the language, title, type roles and colour roles. Use native HTML for text and SVG for custom diagrams. The starter supports full-width evidence, paired comparisons, read pages and image-led pages as well as the original split. Add structure when the content needs it; do not force the evidence into its default sample.
+Set the language, title, type roles and colour roles. Use native HTML for text and SVG for custom diagrams. The starter supports full-width evidence, paired comparisons, read pages and image-led pages as well as a chart-and-commentary split. Add structure when the content needs it; do not force the evidence into its default sample.
 
 For more complex charts use an appropriate chart library or deterministic drawing code. Keep the dataset and transformation reproducible. The small bar helper is only for finite non-negative values; use another chart for negative values, intervals or multiple axes.
 
 The starter uses installed system fonts and has no remote assets by default. To use a specific licensed font, supply local font files or an approved hosted source. Confirm availability and disclose any external dependency. Test offline if offline operation is required.
 
 ```bash
-python3 scripts/slop_lint.py deck.html --ghost --mode=read
+python3 scripts/lint.py deck.html --ghost --mode=read
 node scripts/render.mjs deck.html qa --pdf
 ```
 
@@ -37,8 +37,8 @@ For review, inspect the pages directly; no rebuild is needed. For improvement, r
 
 ## Tools and limitations
 
-- `slop_lint.py` provides static candidates and a title sequence. It does not read every embedded object or verify all numerical definitions and source claims. The default profile treats aesthetic choices as contextual; `--strict-style` restores older style warnings when that brief is desired. `--mode=present` changes density hints, not the page's design.
-- `render.mjs` uses Node with Playwright. PPTX/PDF rasterisation additionally needs LibreOffice/Poppler as applicable. Its computed-style audit cannot fully resolve text over images, complex SVG backgrounds, intentional clipping or font substitution. Inspect rendered output.
+- `lint.py` provides static candidates and a title sequence. It does not read every embedded object or verify all numerical definitions and source claims. The default profile treats aesthetic choices as contextual; `--strict-style` reports them at full severity when the brief asks for a restrained look. `--mode=present` changes density hints, not the page's design. Finnish decks also get the F checks.
+- `render.mjs` uses Node with Playwright and prefers an installed Chrome or Chromium (set `CHROME_PATH` to choose one). Files beside the deck are served from disk through request routing, so relative images and fonts work. PPTX/PDF rasterisation additionally needs LibreOffice/Poppler as applicable. Its computed-style audit cannot fully resolve text over images, complex SVG backgrounds, intentional clipping or font substitution. Inspect rendered output.
 - `NODE_PATH` can point to an existing Node package directory. Prefer available runtimes; install project dependencies only in an allowed development directory. Never bundle node_modules in the skill.
 - Use a fresh QA folder for a new render to avoid mixing pages from different versions.
 

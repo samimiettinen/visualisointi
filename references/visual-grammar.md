@@ -67,3 +67,5 @@ Colour can reinforce roles, but the reader should also have words, positions or 
 [visual-grammar.html](../examples/visual-grammar.html) contains eight original, explicitly illustrative pages: a mechanism, small multiples, an analytical read page, a paired comparison, an annotated object, a spatial schematic and a pair with stable geometry and changing focus. The examples demonstrate representation and composition; their numbers and subjects are not reusable facts.
 
 A [contact sheet](../examples/visual-grammar.png) and [PDF](../examples/visual-grammar.pdf) are included for visual inspection.
+
+[rahoitus.html](../examples/rahoitus.html) shows the finance forms in Finnish on a navy-and-orange house style: a football field with an offer line, an EBITDA bridge, a comparables table with median, mean and the subject row, and a two-way DCF sensitivity. The four pages reconcile with each other (the DCF range on the football field is the sensitivity grid's minimum and maximum; the multiples-based ranges are the stated quartiles times the bridge's 2025 EBITDA). [Contact sheet](../examples/rahoitus.png), [PDF](../examples/rahoitus.pdf). All figures are fictional.

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deck title</title>
 <!--
-  unslop-slides deck engine. One file, no build step, no dependencies.
+  Deck engine of the visualisointi skill. One file, no build step, no dependencies.
   The slide is a fixed 1920 × 1080 canvas scaled to the window, so what you see
   on a laptop, on a projector, in the PDF and in the rendered PNGs is the same layout.
   1 pt in PowerPoint terms = 2 px on this canvas. Keys: → ← space, Home, End, F full screen, P print.
@@ -21,17 +21,17 @@
     --line: rgba(23, 23, 23, .10);
     --ink: #171717;            /* primary text */
     --ink-2: #4f4f4f;          /* secondary */
-    --ink-3: #737373;          /* muted: meta, sources, axis labels */
+    --ink-3: #666666;          /* muted: meta, sources, axis labels (5.2:1 on --raised) */
     /* Emphasis plus optional category roles; choose by meaning, not a colour quota. */
-    --accent: #b4532a;
+    --accent: #ae5029;
     --accent-ink: #ffffff;
     --category-a: #006b6b;
     --category-b: #3559a6;
     --category-c: #a34b27;
     /* Chart neutrals: the series that are not the point */
     --series-1: #2b2b2b;
-    --series-2: #8c8c8c;
-    --series-3: #c9c9c9;
+    --series-2: #6b6b6b;
+    --series-3: #8a8a8a;      /* context series; 3:1 on --raised, label it directly */
     --positive: #2f7d4f;
     --negative: #b42318;
 
@@ -48,7 +48,7 @@
     --t-display: 112px;  /* cover and statement slides only */
     --t-title: 52px;     /* action titles, two lines at most */
     --t-lead: 36px;      /* the one sentence under a title */
-    --t-body: 30px;      /* 15 pt: read decks. Use 36 to 40 for projected talks */
+    --t-body: 30px;      /* 15 pt: read decks. Projected talks: 44–60 px (22–30 pt), see references/tokens.md */
     --t-small: 24px;     /* 12 pt: table cells, labels */
     --t-meta: 20px;      /* 10 pt: sources, footers, page numbers */
     --t-figure: 96px;    /* key figures */
